@@ -9,6 +9,6 @@ from cloud_back.cloud_back_stack import CloudBackStack
 app = cdk.App()
 CloudBackStack(app, "CloudBackStack",
 
-    )
+            )
 
 app.synth()
