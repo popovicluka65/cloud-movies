@@ -75,15 +75,15 @@ class CloudBackStack(Stack):
                 },
                 role=lambda_role
             )
-            fn_url = function.add_function_url(
-                auth_type=_lambda.FunctionUrlAuthType.NONE,
-                cors=_lambda.FunctionUrlCorsOptions(
-                    allowed_origins=["https://localhost:4200"],
-                    allowed_methods=["GET", "POST", "OPTIONS"],
-                    allowed_headers=["Content-Type"],
-                    # max_age=core.Duration.seconds(300)  # Opcionalno: keširanje preflight odgovora
-                )
-            )
+            # fn_url = function.add_function_url(
+            #     auth_type=_lambda.FunctionUrlAuthType.NONE,
+            #     cors=_lambda.FunctionUrlCorsOptions(
+            #         allowed_origins=["https://localhost:4200"],
+            #         #allowed_methods=["GET", "POST", "OPTIONS"],
+            #         allowed_headers=["Content-Type"],
+            #         # max_age=core.Duration.seconds(300)  # Opcionalno: keširanje preflight odgovora
+            #     )
+            # )
 
             return function
 
@@ -162,9 +162,9 @@ class CloudBackStack(Stack):
         #     description='This is api gateway for movies.'
         # )
 
-        self.api = apigateway.RestApi(self, "MovieCloudApp",
-                                 rest_api_name="Movie Content Service",
-                                 description="This service serves movie content.",
+        self.api = apigateway.RestApi(self, "MovieCloudApps",
+                                 rest_api_name="Movie apps",
+                                 description="This service serves movie contents.",
                                  endpoint_types=[apigateway.EndpointType.REGIONAL],
                                  default_cors_preflight_options={
                                      "allow_origins": apigateway.Cors.ALL_ORIGINS,
