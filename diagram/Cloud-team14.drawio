@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2024-06-08T18:58:43.309Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" etag="xLWWmuv0b1eLsCjjxTPu" version="24.5.2" type="device">
+<mxfile host="app.diagrams.net" modified="2024-06-08T20:30:33.442Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" etag="DWbS1uWuybwH_PwNYGKJ" version="24.5.2" type="google">
   <diagram name="Page-1" id="EwK5Ligvvp7yizR6S-p4">
-    <mxGraphModel dx="4938" dy="2227" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="5338" dy="2441" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -310,7 +310,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="syloh0B-09BcFuXOq7WK-86" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Email SNS&lt;/font&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.sns;" parent="1" vertex="1">
-          <mxGeometry x="-960" y="100" width="78" height="78" as="geometry" />
+          <mxGeometry x="-810" y="100" width="78" height="78" as="geometry" />
         </mxCell>
         <mxCell id="syloh0B-09BcFuXOq7WK-88" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Subscribe Content&lt;/font&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" parent="1" vertex="1">
           <mxGeometry x="-590" y="100" width="78" height="78" as="geometry" />
@@ -318,13 +318,12 @@
         <mxCell id="syloh0B-09BcFuXOq7WK-91" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Email&lt;/font&gt;" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#0080F0;shadow=0;dashed=0;shape=mxgraph.ios7.icons.mail;" parent="1" vertex="1">
           <mxGeometry x="-1260" y="109" width="80" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="syloh0B-09BcFuXOq7WK-92" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="syloh0B-09BcFuXOq7WK-66" target="syloh0B-09BcFuXOq7WK-88" edge="1">
+        <mxCell id="syloh0B-09BcFuXOq7WK-92" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0;exitY=0.25;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="syloh0B-09BcFuXOq7WK-58" target="syloh0B-09BcFuXOq7WK-88" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="620" y="810" as="sourcePoint" />
             <mxPoint x="670" y="760" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="1329" y="1560" />
-              <mxPoint x="-560" y="1550" />
+              <mxPoint x="-550" y="1040" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -339,12 +338,6 @@
             <mxPoint x="-690" y="340" as="sourcePoint" />
             <mxPoint x="-640" y="290" as="targetPoint" />
             <Array as="points" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="syloh0B-09BcFuXOq7WK-96" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.993;exitY=0.556;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="syloh0B-09BcFuXOq7WK-91" target="syloh0B-09BcFuXOq7WK-86" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-1179" y="145" as="sourcePoint" />
-            <mxPoint x="-640" y="290" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="syloh0B-09BcFuXOq7WK-98" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="syloh0B-09BcFuXOq7WK-80" target="syloh0B-09BcFuXOq7WK-2" edge="1">
@@ -417,6 +410,52 @@
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="550" y="1170" as="sourcePoint" />
             <mxPoint x="600" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="syloh0B-09BcFuXOq7WK-115" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Email Topic&lt;/font&gt;" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.topic;" parent="1" vertex="1">
+          <mxGeometry x="-1070" y="109" width="78" height="67" as="geometry" />
+        </mxCell>
+        <mxCell id="syloh0B-09BcFuXOq7WK-116" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="syloh0B-09BcFuXOq7WK-115" target="syloh0B-09BcFuXOq7WK-86" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-1120" y="410" as="sourcePoint" />
+            <mxPoint x="-1070" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="syloh0B-09BcFuXOq7WK-117" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" parent="1" source="syloh0B-09BcFuXOq7WK-91" target="syloh0B-09BcFuXOq7WK-115" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-1120" y="410" as="sourcePoint" />
+            <mxPoint x="-1070" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="syloh0B-09BcFuXOq7WK-118" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Uploaded Movie&lt;/font&gt;" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.topic;" parent="1" vertex="1">
+          <mxGeometry x="310" y="-23.5" width="78" height="67" as="geometry" />
+        </mxCell>
+        <mxCell id="syloh0B-09BcFuXOq7WK-119" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Uploaded SNS&lt;/font&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.sns;" parent="1" vertex="1">
+          <mxGeometry x="518" y="-30" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="syloh0B-09BcFuXOq7WK-120" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="syloh0B-09BcFuXOq7WK-119" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="140" as="sourcePoint" />
+            <mxPoint x="840" y="-70" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="720" y="10" />
+              <mxPoint x="720" y="-70" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="syloh0B-09BcFuXOq7WK-121" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="syloh0B-09BcFuXOq7WK-118" target="syloh0B-09BcFuXOq7WK-119" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="140" as="sourcePoint" />
+            <mxPoint x="530" y="90" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="syloh0B-09BcFuXOq7WK-122" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="syloh0B-09BcFuXOq7WK-4" target="syloh0B-09BcFuXOq7WK-118" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="140" as="sourcePoint" />
+            <mxPoint x="530" y="90" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="70" y="10" />
+            </Array>
           </mxGeometry>
         </mxCell>
       </root>
