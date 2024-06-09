@@ -53,7 +53,7 @@ class CloudBackStack(Stack):
                 ],
                 resources=[
                     "arn:aws:s3:::content-bucket-cloud-app-movie2/*"
-                    # Zamijenite "your-bucket-name" sa stvarnim imenom vašeg S3 bucketa
+
                 ]
             )
         )
@@ -181,37 +181,7 @@ class CloudBackStack(Stack):
             None
         )
 
-        # upload_to_s3_lambda=create_lambda_function(
-        #     "postMoviesS3Bucket",
-        #     "postMoviesFunction",
-        #     "s3_handler.s3_handler",
-        #     "uploadMovies",
-        #     "POST",
-        #     [],
-        #     None,
-        #     bucket.bucket_name
-        # )
 
-        #bucket.grant_put(upload_to_s3_lambda)
-
-        # upload_to_d3_lambda = create_lambda_function(
-        #     "postMoviesDinamo",
-        #     "postMoviesFunctionDinamo",
-        #     "dynamodb_handler.dynamodb_handler",
-        #     "uploadMovies",
-        #     "POST",
-        #     [],
-        #     table.table_name,
-        #     None
-        # )
-        #
-        # table.grant_write_data(upload_to_d3_lambda)
-        #
-        # upload_to_s3_lambda.add_event_source(
-        #     aws_lambda_event_sources.DynamoEventSource(table,
-        #                                                starting_position=_lambda.StartingPosition.LATEST,
-        #                                                batch_size=1)
-        # )
 
         upload_data=upload_lambda_function(
             "postMoviesS3Bucket",
@@ -245,42 +215,9 @@ class CloudBackStack(Stack):
             resources=["*"]  # Ovde možete specificirati tačne Lambda funkcije koje API Gateway može pozivati
         ))
 
-        # # Kreiranje IAM uloge za S3
-        # s3_role = iam.Role(
-        #     self, "S3Role",
-        #     assumed_by=iam.ServicePrincipal("s3.amazonaws.com"),
-        #     description="Role for S3 to access resources"
-        # )
-        #
-        # # Dodavanje dozvola ulozi za pristup S3 kanti
-        # s3_role.add_to_policy(iam.PolicyStatement(
-        #     actions=[
-        #         "s3:GetObject",
-        #         "s3:PutObject",
-        #         "s3:DeleteObject"
-        #     ],
-        #     resources=[
-        #         bucket.bucket_arn,
-        #         bucket.bucket_arn + "/*"
-        #     ]
-        # ))
-        #
-        # policy_statement = iam.PolicyStatement(
-        #     sid="PublicWritePutObject",
-        #     effect=iam.Effect.ALLOW,
-        #     actions=["s3:PutObject"],
-        #     resources=["arn:aws:s3:::cloud-movies/*"]
-        # )
-        #
-        # # Kreiramo IAM ulogu
-        # api_gateway_role = iam.Role(
-        #     self, "ApiGatewayRole",
-        #     assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com"),
-        #     description="Role for API Gateway to interact with S3"
-        # )
+        bucket.grant_read_write(upload_data)
 
-        # Dodajemo politiku na ulogu
-        # api_gateway_role.add_to_policy(policy_statement)
+
 
         self.api = apigateway.RestApi(self, "MovieCloudProject",
                                  rest_api_name="Movie apps project",
@@ -308,15 +245,15 @@ class CloudBackStack(Stack):
 
         self.api.root.add_resource("movies123").add_method("GET", get_movies_integration)
 
-        api_deployment = apigateway.Deployment(self, "ApiDeployment", api=self.api)
+        api_deployment = apigateway.Deployment(self, "ApiDeploymentNew", api=self.api)
 
         apigateway.Stage(self, "Stage",
                          deployment=api_deployment,
-                         stage_name="produkcijanova")
+                         stage_name="testirajprodukciju")
 
         movie_resource = self.api.root.add_resource("movie")
 
         movie_resource.add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
 
-        #self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_to_s3_lambda, credentials_role=api_gateway_role, proxy=True))
+        self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
 
