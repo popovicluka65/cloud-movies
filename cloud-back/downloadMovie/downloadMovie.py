@@ -24,7 +24,6 @@ def download_movie_handler(event, context):
     s3 = boto3.client('s3')
 
     try:
-        # Proverite da li objekat postoji u bucketu
         response = s3.list_objects_v2(Bucket=S3_BUCKET_NAME, Prefix=object_key)
 
         if 'Contents' in response and any(obj['Key'] == object_key for obj in response['Contents']):
@@ -46,24 +45,3 @@ def download_movie_handler(event, context):
             'body': f'Error generating URL: {str(e)}'
         }
 
-    # key = event['pathParameters']['movieId']
-    #
-    # # try:
-    # #     url = s3.generate_persigned_url('get_object', Params={'Bucket': bucket_name, 'Key': key},ExpiresIn=3600)
-    # #     return {
-    # #         'statusCode': 200,
-    # #         'body': json.dumps({'url':url})
-    # #     }
-    # # except Exception as e:
-    # #     return {
-    # #         'key': key,
-    # #         'bucket_name': bucket_name,
-    # #         'statusCode': 500,
-    # #         'body': json.dumps({'error': str(e)})
-    # #     }
-    # return {
-    #             'key':key,
-    #             'statusCode': 200,
-    #             'body': json.dumps("cao")
-    # }
-           
