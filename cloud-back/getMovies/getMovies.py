@@ -3,7 +3,7 @@ import boto3
 
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'MoviesTable'  # Ime vaše DynamoDB tabele
+table_name = 'MoviesTable'  # Ime DynamoDB tabele
 
 
 def lambda_handler(event, context):

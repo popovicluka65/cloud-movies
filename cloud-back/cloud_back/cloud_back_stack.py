@@ -73,8 +73,6 @@ class CloudBackStack(Stack):
         # # Dodajemo politiku na S3 kantu
         # bucket.add_to_resource_policy(bucket_policy_statement)
 
-        # Dodajte dozvole Lambda funkciji da pristupi S3 bucketu
-
 
         table = dynamodb.Table(
             self, 'MoviesTable',
@@ -181,6 +179,17 @@ class CloudBackStack(Stack):
             None
         )
 
+        download_movie_lambda = upload_lambda_function(
+            "getS3Content",
+            "downloadContentS3",
+            "downloadMovie.download_movie_handler",
+            "downloadMovie",
+            "GET",
+            [],
+            table.table_name,
+            bucket.bucket_name
+        )
+
 
 
         upload_data=upload_lambda_function(
@@ -204,6 +213,17 @@ class CloudBackStack(Stack):
                     f"arn:aws:s3:::content-bucket-cloud-app-movie2/*",  # Dozvole za sve objekte unutar bucketa
                 ]))
 
+        download_movie_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                    "s3:PutObject",
+                ],
+                resources=[
+                    f"arn:aws:s3:::content-bucket-cloud-app-movie2/*",  # Dozvole za sve objekte unutar bucketa
+                ]))
+
+
         api_gateway_role = iam.Role(self, "ApiGatewayRole",
                                     assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com"),
                                     description="Role for API Gateway to invoke lambda functions")
@@ -212,22 +232,28 @@ class CloudBackStack(Stack):
         # Dodaj potrebne permisije roli
         api_gateway_role.add_to_policy(iam.PolicyStatement(
             actions=["lambda:InvokeFunction"],
-            resources=["*"]  # Ovde možete specificirati tačne Lambda funkcije koje API Gateway može pozivati
+            resources=["*"]  # mogu ovde stativi specificirane lambde
         ))
 
         bucket.grant_read_write(upload_data)
 
+        # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
+        table.grant_read_data(get_movie_lambda)
+
+        bucket.grant_read_write(download_movie_lambda)
 
 
-        self.api = apigateway.RestApi(self, "MovieCloudProject",
-                                 rest_api_name="Movie apps project",
+        self.api = apigateway.RestApi(self, "CloudProjectTeam14",
+                                 rest_api_name="CloudProject2023",
                                  description="This service serves movie contents.",
                                  endpoint_types=[apigateway.EndpointType.REGIONAL],
                                  default_cors_preflight_options={
                                      "allow_origins": apigateway.Cors.ALL_ORIGINS,
                                      "allow_methods": apigateway.Cors.ALL_METHODS
-                                 }
+                                 },
+
                                  )
+
 
 
         get_movie_lambda.add_permission(
@@ -237,23 +263,48 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
-        # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
-        table.grant_read_data(get_movie_lambda)
+        download_movie_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
 
-        get_movies_integration = apigateway.LambdaIntegration(get_movie_lambda,
-                                                              credentials_role=api_gateway_role, proxy=True)
+        movie_resource = self.api.root.add_resource("movieNew")
 
+        # GET metoda za /movies123
+        get_movies_integration = apigateway.LambdaIntegration(get_movie_lambda, credentials_role=api_gateway_role, proxy=True)
         self.api.root.add_resource("movies123").add_method("GET", get_movies_integration)
 
-        api_deployment = apigateway.Deployment(self, "ApiDeploymentNew", api=self.api)
-
-        apigateway.Stage(self, "Stage",
-                         deployment=api_deployment,
-                         stage_name="testirajprodukciju")
-
+        # POST metoda za /movie
         movie_resource = self.api.root.add_resource("movie")
-
         movie_resource.add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
 
+        # POST metoda za /movieS3
         self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
 
+        # GET metoda za /movie/{movieId}
+        movie_resource_with_id = movie_resource.add_resource("{movieName}")
+        movie_resource_with_id.add_method("GET", apigateway.LambdaIntegration(download_movie_lambda,
+                                                                              credentials_role=api_gateway_role,
+                                                                              proxy=True))
+
+        # GET metoda za /downloadS3Content/{contentId}
+        download_s3_resource_with_id = self.api.root.add_resource("downloadS3Content")
+        download_s3_resource_with_id_with_id = download_s3_resource_with_id.add_resource("{contentName}")
+        download_s3_resource_with_id_with_id.add_method("GET", apigateway.LambdaIntegration(download_movie_lambda,
+                                                                                            credentials_role=api_gateway_role,
+                                                                                            proxy=True))
+
+        new_rute = self.api.root.add_resource("getFromS3")
+        new_rute_id = new_rute.add_resource("{id}")
+        new_rute_id.add_method("GET", apigateway.LambdaIntegration(download_movie_lambda, proxy=True))
+
+        # deployment nakon dodavanja svih resursa i metoda
+        api_deployment_new = apigateway.Deployment(self, "ApiDeploymentTotalNew",
+                                                   api=self.api)
+
+        # novi stage
+        apigateway.Stage(self, "NewStage",
+                         deployment=api_deployment_new,
+                         stage_name="noviStage")

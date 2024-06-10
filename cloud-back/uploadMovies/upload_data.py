@@ -23,8 +23,8 @@ def upload_data_handler(event, context):
         name = body['name']
         type = body['type']
         size = body['size']
-        #date_created = body['dateCreated']
-        #date_modified = body['dateModified']
+        date_created = body['dateCreated']
+        date_modified = body['dateModified']
 
         table = dynamodb.Table(table_name)
 
@@ -40,15 +40,14 @@ def upload_data_handler(event, context):
             'name': name,
             'type': type,
             'size': size,
-            #'date_created': date_created,
-            #'date_modified': date_modified
+            'date_created': date_created,
+            'date_modified': date_modified
         }
 
         table.put_item(Item=item)
 
 
         try:
-            # Pokušaj da dobiješ metapodatke o bucketu
             s3.head_bucket(Bucket=S3_BUCKET_NAME)
             presigned_url = s3.generate_presigned_url(
                 'put_object',
@@ -62,8 +61,6 @@ def upload_data_handler(event, context):
                 'statusCode': 404,
                 'body': json.dumps({'message': str(e)})
             }
-
-
         return {
             'statusCode': 200,
             'headers': {
