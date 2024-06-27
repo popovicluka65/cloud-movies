@@ -9,7 +9,8 @@ from aws_cdk import (
     aws_dynamodb as dynamodb,
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as tasks,
-    aws_s3 as s3, aws_lambda_event_sources, RemovalPolicy
+    aws_s3 as s3, aws_lambda_event_sources, RemovalPolicy,
+    aws_cognito as cognito
 )
 from constructs import Construct
 
@@ -82,6 +83,26 @@ class CloudBackStack(Stack):
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
+        user_pool = cognito.UserPool(
+            self, "MovieUserPool",
+            user_pool_name="MovieUserPool",
+            self_sign_up_enabled=True,
+            auto_verify=cognito.AutoVerifiedAttrs(email=True),
+            password_policy=cognito.PasswordPolicy(
+                min_length=8,
+                require_digits=True,
+                require_lowercase=True,
+                require_uppercase=True,
+                require_symbols=False
+
+            ),
+            sign_in_aliases=cognito.SignInAliases(email=True),
+            account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
+            standard_attributes=cognito.StandardAttributes(
+                email=cognito.StandardAttribute(required=True)
+            )
+        )
+
         lambda_role = iam.Role(
             self, "LambdaRole",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
@@ -102,8 +123,16 @@ class CloudBackStack(Stack):
                     "dynamodb:DeleteItem",
                     "s3:GetObject",
                     "s3:PutObject",
+                    "s3:PutObjectACL",
+                    "cognito-idp:AdminCreateUser",
+                    "cognito-idp:AdminInitiateAuth",
+                    "cognito-idp:AdminRespondToAuthChallenge"
                 ],
-                resources=[table.table_arn]
+                resources=[
+                    table.table_arn,
+                    f"{bucket.bucket_arn}/*",
+                    user_pool.user_pool_arn
+                ]
             )
         )
 
@@ -132,7 +161,8 @@ class CloudBackStack(Stack):
                 memory_size=128,
                 timeout=Duration.seconds(10),
                 environment={
-                    env: database
+                    env: database,
+                    'USER_POOL_ID': user_pool.user_pool_id
                 },
                 role=lambda_role
             )

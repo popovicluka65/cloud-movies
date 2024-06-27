@@ -1,13 +1,18 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import {LayoutModule} from "./modules/layout/layout.module";
+import {RouterOutlet} from "@angular/router";
+import {MovieModule} from "./modules/movie/movie.module";
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
+  imports: [
+    LayoutModule,
+    RouterOutlet,
+    MovieModule
+  ],
+  standalone: true
 })
 export class AppComponent {
   title = 'cloud-front';

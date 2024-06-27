@@ -1,43 +1,55 @@
 {
-  "hash": "70e8c4a7",
-  "configHash": "6a2c0600",
-  "lockfileHash": "6258d123",
-  "browserHash": "5ca44b1f",
+  "hash": "1a3e6534",
+  "configHash": "66ccab37",
+  "lockfileHash": "2c3f469f",
+  "browserHash": "c60022a7",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "441ef170",
+      "fileHash": "004604b6",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "481d7143",
+      "fileHash": "a6ae295c",
+      "needsInterop": false
+    },
+    "@angular/forms": {
+      "src": "../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
+      "file": "@angular_forms.js",
+      "fileHash": "e2184e58",
+      "needsInterop": false
+    },
+    "@angular/material/toolbar": {
+      "src": "../../../../../node_modules/@angular/material/fesm2022/toolbar.mjs",
+      "file": "@angular_material_toolbar.js",
+      "fileHash": "b9484ee1",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "4ad018a7",
+      "fileHash": "7cc8901e",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "c0c441ea",
+      "fileHash": "672bdc18",
       "needsInterop": false
     }
   },
   "chunks": {
-    "chunk-WU2NOARP": {
-      "file": "chunk-WU2NOARP.js"
+    "chunk-6QP335MA": {
+      "file": "chunk-6QP335MA.js"
     },
-    "chunk-CB6IC6GE": {
-      "file": "chunk-CB6IC6GE.js"
+    "chunk-VFRMX3UB": {
+      "file": "chunk-VFRMX3UB.js"
     },
-    "chunk-ZU5J2OK7": {
-      "file": "chunk-ZU5J2OK7.js"
+    "chunk-F2OSK265": {
+      "file": "chunk-F2OSK265.js"
     }
   }
 }
