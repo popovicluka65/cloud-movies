@@ -1,37 +1,19 @@
-<div class="mat-app-background">
-  <div fxLayoutAlign="center" fxFlexFill>
-    <mat-card fxFlex="50" class="mat-card-margine" >
-      <mat-toolbar class="signup-toolbar">Registration</mat-toolbar>
-      <form fxLayoutAlign="stretch" fxLayout="column" class="signup-form"  >
-        <mat-form-field>
-          <input matInput formControlName="email" placeholder="email">
-        </mat-form-field>
-        <mat-form-field>
-          <input matInput type="password" formControlName="password" placeholder="password">
-        </mat-form-field>
-        <mat-form-field>
-          <input matInput type="password" formControlName="confirmPassword" placeholder="repeat password">
-        </mat-form-field>
-        <mat-form-field>
-          <input matInput formControlName="name" placeholder="name">
-        </mat-form-field>
-        <mat-form-field>
-          <input matInput formControlName="surname" placeholder="surname">
-        </mat-form-field>
-        <mat-form-field>
-          <input matInput formControlName="address" placeholder="address">
-        </mat-form-field>
-        <mat-form-field>
-          <input matInput formControlName="phone" placeholder="phone without any special sign">
-        </mat-form-field>
-        <div fxLayoutAlign="center" class="radio-buttons">
-          <mat-radio-group class="radio-group">
-            <mat-radio-button value="OWNER" class="white-text">Owner</mat-radio-button>
-            <mat-radio-button value="GUEST" class="white-text">Guest</mat-radio-button>
-          </mat-radio-group>
-        </div>
-        <button mat-button type="submit" id="registerbtn" class="signup-button" >Register</button>
-      </form>
-    </mat-card>
-  </div>
+<!-- register.component.html -->
+<div>
+  <h2>Register</h2>
+  <form (ngSubmit)="onRegister()">
+    <div>
+      <label for="username">Username</label>
+      <input type="text" id="username" [(ngModel)]="registerUsername" name="username" required>
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input type="password" id="password" [(ngModel)]="registerPassword" name="password" required>
+    </div>
+    <div>
+      <label for="email">Email</label>
+      <input type="email" id="email" [(ngModel)]="registerEmail" name="email" required>
+    </div>
+    <button type="submit">Register</button>
+  </form>
 </div>
