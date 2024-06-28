@@ -1,0 +1,45 @@
+.main-div mat-card{
+  padding: 0;
+}
+
+.signup-form{
+  padding: 20px;
+  background-color:#ADD8E6;
+}
+
+.signup-toolbar{
+  display: flex;
+  justify-content: center;
+  background-color:#D9D9D9;
+}
+
+.signup-button{
+  padding: 20px;
+  background-color:#D9D9D9;
+}
+
+.centered-text {
+  text-align: center;
+}
+.mat-app-background {
+  background-color: #2E8EE3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.mat-card-margine{
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+.radio-buttons{
+  margin-bottom: 20px;
+}
+
+.radio-group {
+  flex-direction: column;
+}
+
+.white-text {
+  color: white;
+}

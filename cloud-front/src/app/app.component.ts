@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import {LayoutModule} from "./modules/layout/layout.module";
 import {RouterOutlet} from "@angular/router";
 import {MovieModule} from "./modules/movie/movie.module";
+import {LoginComponent} from "./modules/auth/login/login.component";
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,8 @@ import {MovieModule} from "./modules/movie/movie.module";
   imports: [
     LayoutModule,
     RouterOutlet,
-    MovieModule
+    MovieModule,
+    LoginComponent,
   ],
   standalone: true
 })

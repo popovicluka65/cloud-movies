@@ -1,0 +1,37 @@
+<div class="mat-app-background">
+  <div fxLayoutAlign="center" fxFlexFill>
+    <mat-card fxFlex="50" class="mat-card-margine" >
+      <mat-toolbar class="signup-toolbar">Registration</mat-toolbar>
+      <form fxLayoutAlign="stretch" fxLayout="column" class="signup-form"  >
+        <mat-form-field>
+          <input matInput formControlName="email" placeholder="email">
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput type="password" formControlName="password" placeholder="password">
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput type="password" formControlName="confirmPassword" placeholder="repeat password">
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput formControlName="name" placeholder="name">
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput formControlName="surname" placeholder="surname">
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput formControlName="address" placeholder="address">
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput formControlName="phone" placeholder="phone without any special sign">
+        </mat-form-field>
+        <div fxLayoutAlign="center" class="radio-buttons">
+          <mat-radio-group class="radio-group">
+            <mat-radio-button value="OWNER" class="white-text">Owner</mat-radio-button>
+            <mat-radio-button value="GUEST" class="white-text">Guest</mat-radio-button>
+          </mat-radio-group>
+        </div>
+        <button mat-button type="submit" id="registerbtn" class="signup-button" >Register</button>
+      </form>
+    </mat-card>
+  </div>
+</div>
