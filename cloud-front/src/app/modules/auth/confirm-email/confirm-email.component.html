@@ -1,0 +1,13 @@
+<div>
+  <h2>Confirm Registration</h2>
+
+  <p>Enter the confirmation code received via email:</p>
+
+  <mat-form-field>
+    <input matInput type="text" placeholder="Confirmation Code" [(ngModel)]="confirmationCode">
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" (click)="confirmRegistration()">Verify</button>
+
+  <p>{{ message }}</p>
+</div>

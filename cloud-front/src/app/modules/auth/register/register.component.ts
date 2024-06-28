@@ -46,8 +46,6 @@ export class RegisterComponent implements OnInit {
 
   constructor(private router: Router) {}
 
-
-
   ngOnInit(): void {}
 
   onRegister() {
@@ -76,7 +74,7 @@ export class RegisterComponent implements OnInit {
         return;
       }
       console.log('Registration successful:', result);
-      this.router.navigate(['/login']); // Zameni sa putanjom na koju želiš da preusmeriš korisnika nakon registracije
+      this.router.navigate(['/verify-email']); // Zameni sa putanjom na koju želiš da preusmeriš korisnika nakon registracije
     });
   }
 }
