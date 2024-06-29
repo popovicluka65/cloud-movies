@@ -6,10 +6,11 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import { MatToolbarModule } from '@angular/material/toolbar';
 import {MatButton} from "@angular/material/button";
 import {MovieModule} from "../movie/movie.module";
+import {SearchComponent} from "./search/search.component";
 
 @NgModule({
   declarations: [
-    NavbarComponent
+    NavbarComponent,
   ],
     imports: [
         CommonModule,

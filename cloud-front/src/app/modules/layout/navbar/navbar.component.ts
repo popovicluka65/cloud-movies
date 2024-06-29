@@ -30,4 +30,8 @@ export class NavbarComponent{
       }
     );
   }
+
+  toHome() {
+    this.router.navigate(['/home']);
+  }
 }
