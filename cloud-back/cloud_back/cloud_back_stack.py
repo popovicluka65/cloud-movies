@@ -10,7 +10,8 @@ from aws_cdk import (
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as tasks,
     aws_s3 as s3, aws_lambda_event_sources, RemovalPolicy,
-    aws_cognito as cognito
+    aws_cognito as cognito,
+    aws_sns as sns
 )
 from constructs import Construct
 
@@ -128,8 +129,23 @@ class CloudBackStack(Stack):
             ]
         )
 
+        # Kreiranje SNS teme
+        topic = sns.Topic(self, "MovieTopic",
+                          display_name="MovieTopic",
+                          topic_name="MovieTopic")
 
+        actions_sns = [
+             "sns:Publish"
+        ]
 
+        topic.add_to_resource_policy(
+             statement=iam.PolicyStatement(
+                 effect=iam.Effect.ALLOW,
+                 actions=actions_sns,
+                 principals=[iam.ServicePrincipal("lambda.amazonaws.com")],
+                 resources=[topic.topic_arn]
+             )
+             )
 
         lambda_role = iam.Role(
             self, "LambdaRole",
@@ -154,16 +170,17 @@ class CloudBackStack(Stack):
                     "s3:PutObjectACL",
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminInitiateAuth",
-                    "cognito-idp:AdminRespondToAuthChallenge"
+                    "cognito-idp:AdminRespondToAuthChallenge",
+                    "sns:Publish"
                 ],
                 resources=[
                     table.table_arn,
                     f"{bucket.bucket_arn}/*",
-                    user_pool.user_pool_arn
+                    user_pool.user_pool_arn,
+                    topic.topic_arn
                 ]
             )
         )
-
         def create_lambda_function(id,name, handler, include_dir, method, layers, database_dynamo,database_s3):
             env='TABLE_NAME'
             if database_dynamo is not None:
@@ -190,7 +207,8 @@ class CloudBackStack(Stack):
                 timeout=Duration.seconds(10),
                 environment={
                     env: database,
-                    'USER_POOL_ID': user_pool.user_pool_id
+                    'USER_POOL_ID': user_pool.user_pool_id,
+                    'TOPIC_ARN': topic.topic_arn
                 },
                 role=lambda_role
             )
