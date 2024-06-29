@@ -19,7 +19,7 @@ export class NavbarComponent{
   }
 
   getMovie() {
-    this.movieService.getMovie("Inception").subscribe(
+    this.movieService.getMovie("Juzni vetar").subscribe(
       (movie: string) => {
         console.log('Received movie:', movie);
 
@@ -29,5 +29,9 @@ export class NavbarComponent{
         // Handle error
       }
     );
+  }
+
+  toHome() {
+    this.router.navigate(['/home']);
   }
 }

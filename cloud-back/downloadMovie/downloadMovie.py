@@ -9,6 +9,12 @@ S3_BUCKET_NAME = 'content-bucket-cloud-app-movie2'
 S3_FOLDER_PATH = 'movies/'
 
 def download_movie_handler(event, context):
+    headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',  # Or use 'http://localhost:4200/'
+        'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization'
+    }
 
     try:
         key = event['pathParameters']['id']
@@ -31,16 +37,19 @@ def download_movie_handler(event, context):
                                             Params={'Bucket': S3_BUCKET_NAME, 'Key': object_key},
                                             ExpiresIn=3600)
             return {
+                'headers': headers,
                 'statusCode': 200,
                 'body': url
             }
         else:
             return {
+                'headers': headers,
                 'statusCode': 404,
                 'body': 'Object not found: ' + object_key
             }
     except Exception as e:
         return {
+            'headers': headers,
             'statusCode': 500,
             'body': f'Error generating URL: {str(e)}'
         }

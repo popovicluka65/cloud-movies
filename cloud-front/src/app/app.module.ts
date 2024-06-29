@@ -13,19 +13,6 @@ import {AmplifyAuthenticatorModule} from "@aws-amplify/ui-angular";
 import {Interceptor} from "./modules/auth/interceptor";
 import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from "@angular/common/http";
 
-// Amplify.configure({
-//   Auth: {
-//     Cognito: {
-//       identityPoolId: '',
-//       userPoolId: 'eu-central-1_rzNdae5DO',
-//       userPoolClientId: '1pqmkm01elhhmruf11383q6vu8',
-//       loginWith: {
-//          email: true,
-//       },
-//     },
-//   }
-// })
-
 @NgModule({
   declarations: [
     AppComponent,
