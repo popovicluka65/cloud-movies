@@ -1,7 +1,7 @@
 from aws_cdk import (
-    # Duration,
     Stack,
     aws_apigateway as apigateway,
+    aws_lambda as lambda_,
     aws_lambda as _lambda,
     aws_dynamodb as dynamodb,
     aws_iam as iam, BundlingOptions, Duration,
@@ -10,8 +10,9 @@ from aws_cdk import (
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as tasks,
     aws_s3 as s3, aws_lambda_event_sources, RemovalPolicy,
-    aws_cognito as cognito
+    aws_cognito as cognito,
 )
+#import aws_cdk as core
 from constructs import Construct
 
 class CloudBackStack(Stack):
@@ -169,8 +170,11 @@ class CloudBackStack(Stack):
             if database_dynamo is not None:
                 database=database_dynamo
             else:
-                env='BUCKET_NAME'
-                database=database_s3
+                if database_dynamo is None and database_s3 is None:
+                    database=""
+                else:
+                    env='BUCKET_NAME'
+                    database=database_s3
             function = _lambda.Function(
                 self, id,
                 function_name=name,
@@ -250,27 +254,6 @@ class CloudBackStack(Stack):
 
 
 
-        upload_data=upload_lambda_function(
-            "postMoviesS3Bucket",
-            "postMoviesFunction",
-            "upload_data.upload_data_handler",
-            "uploadMovies",
-            "POST",
-            [],
-            table.table_name,
-            bucket.bucket_name
-        )
-
-        upload_data.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=[
-                    "s3:GetObject",
-                    "s3:PutObject",
-                ],
-                resources=[
-                    f"arn:aws:s3:::content-bucket-cloud-app-movie2/*",  # Dozvole za sve objekte unutar bucketa
-                ]))
-
         download_movie_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 actions=[
@@ -280,6 +263,128 @@ class CloudBackStack(Stack):
                 resources=[
                     f"arn:aws:s3:::content-bucket-cloud-app-movie2/*",  # Dozvole za sve objekte unutar bucketa
                 ]))
+
+        # UPLOAD S3 AND DYNAMO DB---------------------------------------------------
+
+        # upload_data_s3 = create_lambda_function(
+        #     "uploadMovieToS3Bucket",
+        #     "uploadMoviesFunctionS3",
+        #     "uploadS3handler.upload_S3_handler",
+        #     "s3Upload",
+        #     "POST",
+        #     [],
+        #     None,
+        #     bucket.bucket_name
+        # )
+        #
+        # upload_data_s3.add_to_role_policy(
+        #     iam.PolicyStatement(
+        #         actions=[
+        #             "s3:GetObject",
+        #             "s3:PutObject",
+        #         ],
+        #         resources=[
+        #             f"arn:aws:s3:::content-bucket-cloud-app-movie2/*",
+        #         ]))
+        #
+        # upload_data_dynamo = create_lambda_function(
+        #     "uploadMovieToDynamo",
+        #     "uploadMoviesFunctionDynamo",
+        #     "uploadDynamoHandler.upload_dynamo_handler",
+        #     "dynamoUpload",
+        #     "POST",
+        #     [],
+        #     table.table_name,
+        #     None
+        # )
+        #
+        # upload_data_s3_task = tasks.LambdaInvoke(
+        #     self, 'InvokeLambdaS3',
+        #     lambda_function=upload_data_s3,
+        #     output_path='$.Payload'
+        # )
+        #
+        # upload_data_dynamo_task = tasks.LambdaInvoke(
+        #     self, 'InvokeLambdaDynamo',
+        #     lambda_function=upload_data_dynamo,
+        #     output_path='$.Payload'
+        # )
+        #
+        # # Povezivanje zadataka u lanac
+        # definition_body = upload_data_s3_task.next(upload_data_dynamo_task)
+        #
+        # # Kreiranje state machine
+        # state_machine = sfn.StateMachine(
+        #     self, 'MyStateMachine',
+        #     definition_body=sfn.DefinitionBody.from_chainable(definition_body),
+        #     timeout=Duration.minutes(10),  # Promenjen timeout
+        #     # environment={
+        #     #     'USER_POOL_ID': 'eu-central-1_rzNdae5DO'  # Replace with your user pool ID
+        #     # }
+        # )
+        #
+        # upload_data_s3.grant_invoke(state_machine.role)
+        # upload_data_dynamo.grant_invoke(state_machine.role)
+        # start_upload_data = create_lambda_function(
+        #     "startUploadStep",
+        #     "startUploadStepFunction",
+        #     "startUploadMoviesHandler.upload_data_handler",
+        #     "startUploadMovies",
+        #     None,
+        #     [],
+        #     None,
+        #     None
+        # )
+        #
+
+        # Lambda funkcije
+        first_lambda = lambda_.Function(
+            self, "FirstLambda",
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="uploadS3handler.upload_S3_handler",
+            code=lambda_.Code.from_asset("s3Upload")
+        )
+
+        second_lambda = lambda_.Function(
+            self, "SecondLambda",
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="uploadDynamoHandler.upload_dynamo_handler",
+            code=lambda_.Code.from_asset("dynamoUpload")
+        )
+
+        start_upload_data = lambda_.Function(
+            self, "StartUploadData",
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="startUploadMoviesHandler.upload_data_handler",
+            code=lambda_.Code.from_asset("startUploadMovies")
+        )
+
+        # Definisanje Step Function-a
+        first_task = tasks.LambdaInvoke(
+            self, "First Task",
+            lambda_function=first_lambda
+        )
+
+        second_task = tasks.LambdaInvoke(
+            self, "Second Task",
+            lambda_function=second_lambda
+        )
+
+        definition = first_task.next(second_task)
+
+        state_machine = sfn.StateMachine(
+            self, "StateMachine",
+            definition=definition
+        )
+
+        # Dodela dozvole Lambda funkciji da pokrene Step Function
+        state_machine.grant_start_execution(start_upload_data)
+        start_upload_data.add_environment('STATE_MACHINE_ARN', state_machine.state_machine_arn)
+
+        # state_machine.grant_start_execution(start_upload_data)
+
+        # Optionally, add permissions to the Step Function execution role
+
 
 
         api_gateway_role = iam.Role(self, "ApiGatewayRole",
@@ -293,7 +398,7 @@ class CloudBackStack(Stack):
             resources=["*"]  # mogu ovde stativi specificirane lambde
         ))
 
-        bucket.grant_read_write(upload_data)
+        #bucket.grant_read_write(start_upload_data)
 
         # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
         table.grant_read_data(get_movie_lambda)
@@ -310,9 +415,7 @@ class CloudBackStack(Stack):
                                      "allow_methods": apigateway.Cors.ALL_METHODS
                                  },
 
-                                 )
-
-
+                               )
 
         get_movie_lambda.add_permission(
             "ApiGatewayInvokePermission",
@@ -328,6 +431,15 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
+
+        start_upload_data.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+
         movie_resource = self.api.root.add_resource("movieNew")
 
         # GET metoda za /movies123
@@ -336,10 +448,10 @@ class CloudBackStack(Stack):
 
         # POST metoda za /movie
         movie_resource = self.api.root.add_resource("movie")
-        movie_resource.add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
+        movie_resource.add_method("POST", apigateway.LambdaIntegration(start_upload_data, credentials_role=api_gateway_role, proxy=True))
 
         # POST metoda za /movieS3
-        self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
+        self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(start_upload_data, credentials_role=api_gateway_role, proxy=True))
 
         # GET metoda za /movie/{movieId}
         movie_resource_with_id = movie_resource.add_resource("{movieName}")
