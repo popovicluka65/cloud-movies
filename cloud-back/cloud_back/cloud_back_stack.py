@@ -172,7 +172,9 @@ class CloudBackStack(Stack):
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminInitiateAuth",
                     "cognito-idp:AdminRespondToAuthChallenge",
-                    "sns:Publish"
+                    "sns:Publish",
+                    "states:StartExecution",
+                    "states:DescribeExecution"
                 ],
                 resources=[
                     table.table_arn,
@@ -363,24 +365,29 @@ class CloudBackStack(Stack):
             code=lambda_.Code.from_asset("s3Upload")
         )
 
+        bucket.grant_read_write(first_lambda)
+
         second_lambda = lambda_.Function(
             self, "SecondLambda",
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="uploadDynamoHandler.upload_dynamo_handler",
-            code=lambda_.Code.from_asset("dynamoUpload")
+            code=lambda_.Code.from_asset("dynamoUpload"),
+            role=lambda_role
         )
 
         start_upload_data = lambda_.Function(
             self, "StartUploadData",
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="startUploadMoviesHandler.upload_data_handler",
-            code=lambda_.Code.from_asset("startUploadMovies")
+            code=lambda_.Code.from_asset("startUploadMovies"),
+
         )
 
         # Definisanje Step Function-a
         first_task = tasks.LambdaInvoke(
             self, "First Task",
-            lambda_function=first_lambda
+            lambda_function=first_lambda,
+
         )
 
         second_task = tasks.LambdaInvoke(
@@ -388,7 +395,7 @@ class CloudBackStack(Stack):
             lambda_function=second_lambda
         )
 
-        definition = first_task.next(second_task)
+        definition = second_task.next(first_task)
 
         state_machine = sfn.StateMachine(
             self, "StateMachine",
@@ -397,6 +404,7 @@ class CloudBackStack(Stack):
 
         # Dodela dozvole Lambda funkciji da pokrene Step Function
         state_machine.grant_start_execution(start_upload_data)
+        state_machine.grant_read(start_upload_data)
         start_upload_data.add_environment('STATE_MACHINE_ARN', state_machine.state_machine_arn)
 
         # state_machine.grant_start_execution(start_upload_data)
