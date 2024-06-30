@@ -22,7 +22,6 @@ export class NavbarComponent{
     this.movieService.getMovie("Juzni vetar").subscribe(
       (movie: string) => {
         console.log('Received movie:', movie);
-
       },
       (error) => {
         console.error('Error fetching movie:', error);
@@ -30,8 +29,13 @@ export class NavbarComponent{
       }
     );
   }
-
   toHome() {
     this.router.navigate(['/home']);
+  }
+  UploadVideo() {
+    this.router.navigate(['/upload']);
+  }
+  Subscribe() {
+    this.router.navigate(['/subscribe']);
   }
 }
