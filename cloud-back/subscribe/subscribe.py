@@ -4,10 +4,7 @@ import uuid
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'SubscriptionTable'  # Ime DynamoDB tabele
-s3 = boto3.client('s3')
-S3_BUCKET_NAME = 'content-bucket-cloud-app-movie2'
-S3_FOLDER_PATH = 'movies/'
+table_name = 'Subscription2Table'  # Ime DynamoDB tabele
 
 def lambda_handler(event, context):
     table = dynamodb.Table(table_name)
@@ -23,9 +20,6 @@ def lambda_handler(event, context):
         # title = body['title']
         # description = body['description']
 
-
-        #table = dynamodb.Table(table_name)
-
         generated_uuid = str(uuid.uuid4())
         #posle obrisati samo proveriti da li se unosi id
         subsribtion_id = generated_uuid
@@ -37,21 +31,6 @@ def lambda_handler(event, context):
 
         table.put_item(Item=item)
 
-        try:
-            s3.head_bucket(Bucket=S3_BUCKET_NAME)
-            # presigned_url = s3.generate_presigned_url(
-            #     'put_object',
-            #     Params={'Bucket': S3_BUCKET_NAME, 'Key': f"{S3_FOLDER_PATH}{subsribtion_id}"},
-            #     ExpiresIn=3600
-            # )
-
-            #print(presigned_url)
-        except Exception as e:
-            return {
-                'headers': headers,
-                'statusCode': 404,
-                'body': json.dumps({'message': str(e)})
-            }
         return {
             'headers': headers,
             'statusCode': 200,

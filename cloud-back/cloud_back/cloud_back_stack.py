@@ -86,8 +86,8 @@ class CloudBackStack(Stack):
         )
 
         table_subscricions = dynamodb.Table(
-            self, 'SubscriptionTable',
-            table_name='Subscription1Table',
+            self, 'Subscription2Table',
+            table_name='Subscription2Table',
             partition_key={'name': 'subscription_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
