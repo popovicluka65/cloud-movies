@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {MovieCardComponent} from "./movie-card/movie-card.component";
+import {SearchComponent} from "../layout/search/search.component";
 
 
 
@@ -9,9 +10,10 @@ import {MovieCardComponent} from "./movie-card/movie-card.component";
     MovieCardComponent,
 
   ],
-  imports: [
-    CommonModule
-  ],
+    imports: [
+        CommonModule,
+        SearchComponent
+    ],
   exports:[
     MovieCardComponent
   ]

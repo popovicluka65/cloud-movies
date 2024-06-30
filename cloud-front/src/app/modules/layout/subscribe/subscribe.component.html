@@ -1,0 +1,8 @@
+<div class="search-container">
+  <select [(ngModel)]="selectedCriteria" class="search-criteria">
+    <option value="" disabled selected>Select search criteria</option>
+    <option *ngFor="let option of searchOptions" [value]="option">{{ option }}</option>
+  </select>
+  <input type="text" [(ngModel)]="searchQuery" placeholder="Enter your search query..." class="search-input"/>
+  <button (click)="performSearch()" class="search-button">Search</button>
+</div>
