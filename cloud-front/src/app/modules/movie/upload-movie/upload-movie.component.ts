@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import {FormsModule} from "@angular/forms";
 import {NgForOf} from "@angular/common";
+import {MovieService} from "../movie.service";
 
 @Component({
   selector: 'app-upload-movie',
@@ -21,6 +22,9 @@ export class UploadMovieComponent {
   movieFile: File | null = null;
 
   genreList: string[] = ['Action', 'Drama', 'Comedy', 'Horror', 'Sci-Fi'];
+
+  constructor(private movieService:MovieService) {
+  }
 
   onGenreChange(event: any) {
     const genre = event.target.value;
@@ -46,5 +50,17 @@ export class UploadMovieComponent {
     };
     console.log(movie);
     // Add your form submission logic here
+
+    //valjda radi
+    this.movieService.uploadMovie(movie).subscribe(
+      (response: string) => {
+        console.log(response);
+        // Handle success response
+      },
+      (error: any) => {
+        console.error(error);
+        // Handle error response
+      }
+    );
   }
 }
