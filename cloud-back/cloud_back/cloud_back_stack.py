@@ -242,13 +242,14 @@ class CloudBackStack(Stack):
                 timeout=Duration.seconds(10),
                 environment={
                     "TABLE_NAME": database_dynamo,
-                    "BUCKET_NAME": database_s3
+                    "BUCKET_NAME": database_s3,
+                    'USER_POOL_ID': user_pool.user_pool_id,
+                    'TOPIC_ARN': topic.topic_arn
                 },
                 role=lambda_role
             )
 
             return function
-
 
         get_movie_lambda = create_lambda_function(
             "getMovies",
@@ -272,6 +273,16 @@ class CloudBackStack(Stack):
             bucket.bucket_name
         )
 
+        upload_data = create_lambda_function(
+            "uploadMovieData",
+            "uploadMovieS3Dynamo",
+            "upload_data.upload_data_handler",
+            "uploadMovies",
+            "POST",
+            [],
+            table.table_name,
+            bucket.bucket_name
+        )
 
 
         download_movie_lambda.add_to_role_policy(
@@ -424,7 +435,7 @@ class CloudBackStack(Stack):
             resources=["*"]  # mogu ovde stativi specificirane lambde
         ))
 
-        #bucket.grant_read_write(start_upload_data)
+        bucket.grant_read_write(upload_data)
 
         # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
         table.grant_read_data(get_movie_lambda)
@@ -465,6 +476,12 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
+        upload_data.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
 
         movie_resource = self.api.root.add_resource("movieNew")
 
@@ -474,10 +491,10 @@ class CloudBackStack(Stack):
 
         # POST metoda za /movie
         movie_resource = self.api.root.add_resource("movie")
-        movie_resource.add_method("POST", apigateway.LambdaIntegration(start_upload_data, credentials_role=api_gateway_role, proxy=True))
+        movie_resource.add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
 
         # POST metoda za /movieS3
-        self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(start_upload_data, credentials_role=api_gateway_role, proxy=True))
+        self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
 
         # GET metoda za /movie/{movieId}
         movie_resource_with_id = movie_resource.add_resource("{movieName}")

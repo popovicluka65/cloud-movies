@@ -6,11 +6,7 @@ import boto3
 import os
 
 def upload_data_handler(event, context):
-    # Pokretanje Step funkcije
     client = boto3.client('stepfunctions')
-
-    # ARN tvoje Step funkcije koju želiš da pokreneš
-    #state_machine_arn = 'arn:aws:states:REGION:ACCOUNT_ID:stateMachine:STATE_MACHINE_NAME'
     state_machine_arn = os.environ['STATE_MACHINE_ARN']
 
     try:
@@ -36,15 +32,13 @@ def upload_data_handler(event, context):
             input=json.dumps(input_data)
 
         )
-
-
-
+        # nakon zavrsetka da se ne moze dobaviti pesrignedUrl koji se vraca u poslednjem tasku
 
 
         return {
             'statusCode': 200,
             'body': json.dumps({
-                'message': f'Step function completed successfully: {execution_history}.',
+                'message': f'Step function completed successfully: .',
                 # 'presignedUrl': presigned_url
             })
         }
