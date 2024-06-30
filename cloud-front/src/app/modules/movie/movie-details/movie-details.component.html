@@ -1,3 +1,4 @@
+
 <div class="movie-card">
   <div class="movie-video">
     <div class="movie-video">
@@ -15,7 +16,8 @@
       <p><strong>Genre:</strong> Action, Sci-Fi, Thriller</p>
     </div>
     <div class="movie-actions">
-      <button class="movie-button">Play</button>
+      <button class="movie-button" (click)="edit()">Edit</button>
+      <button class="movie-button" (click)="delete()">Delete</button>
       <button class="movie-button" (click)="download()">Download</button>
     </div>
   </div>

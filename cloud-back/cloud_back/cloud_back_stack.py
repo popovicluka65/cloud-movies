@@ -85,6 +85,14 @@ class CloudBackStack(Stack):
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
+        table_subscricions = dynamodb.Table(
+            self, 'Subscription2Table',
+            table_name='Subscription2Table',
+            partition_key={'name': 'subscription_id', 'type': dynamodb.AttributeType.STRING},
+            sort_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING},
+            stream=dynamodb.StreamViewType.NEW_IMAGE
+        )
+
         user_pool = cognito.UserPool(
             self, "MovieUserPool",
             user_pool_name="MovieUserPool",
@@ -178,7 +186,8 @@ class CloudBackStack(Stack):
                     table.table_arn,
                     f"{bucket.bucket_arn}/*",
                     user_pool.user_pool_arn,
-                    topic.topic_arn
+                    topic.topic_arn,
+                    table_subscricions.table_arn
                 ]
             )
         )
@@ -282,6 +291,35 @@ class CloudBackStack(Stack):
                     f"arn:aws:s3:::content-bucket-cloud-app-movie2/*",  # Dozvole za sve objekte unutar bucketa
                 ]))
 
+        subscribe_lambda = create_lambda_function(
+            "postSubscribe",
+            "subscribe",
+            "subscribe.lambda_handler",
+            "subscribe",
+            "POST",
+            [],
+            table_subscricions.table_name,
+            None
+        )
+
+        # Dodajte dozvole za pristup DynamoDB tabeli
+        subscribe_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table_subscricions.table_arn
+                ]
+            )
+        )
         # UPLOAD S3 AND DYNAMO DB---------------------------------------------------
 
         # upload_data_s3 = create_lambda_function(
@@ -420,9 +458,10 @@ class CloudBackStack(Stack):
 
         # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
         table.grant_read_data(get_movie_lambda)
+        table_subscricions.grant_read_write_data(subscribe_lambda)
 
         bucket.grant_read_write(download_movie_lambda)
-
+        bucket.grant_read_write(subscribe_lambda)
 
         self.api = apigateway.RestApi(self, "CloudProjectTeam14",
                                  rest_api_name="CloudProject2023",
@@ -457,6 +496,13 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
+        subscribe_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
 
         movie_resource = self.api.root.add_resource("movieNew")
 
@@ -483,6 +529,10 @@ class CloudBackStack(Stack):
         download_s3_resource_with_id_with_id.add_method("GET", apigateway.LambdaIntegration(download_movie_lambda,
                                                                                             credentials_role=api_gateway_role,
                                                                                             proxy=True))
+        subsribe_resource = self.api.root.add_resource("subscribe")
+        subsribe_resource.add_method("POST",
+                                  apigateway.LambdaIntegration(subscribe_lambda, credentials_role=api_gateway_role,
+                                                               proxy=True))
 
         new_rute = self.api.root.add_resource("getFromS3")
         new_rute_id = new_rute.add_resource("{id}")
