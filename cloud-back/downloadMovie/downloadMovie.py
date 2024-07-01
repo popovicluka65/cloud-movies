@@ -18,30 +18,39 @@ def download_movie_handler(event, context):
         'Access-Control-Allow-Headers': 'Content-Type,Authorization'
     }
 
-    key = event['pathParameters']['id']
-    decoded_key = urllib.parse.unquote(key)
+    try:
+        key = event['pathParameters']['id']
+        decoded_key = urllib.parse.unquote(key)
+    except KeyError:
+        return {
+            'statusCode': 400,
+            'body': 'Invalid input, "movieId" is required in path parameters'
+        }
+
+    object_key = f"movies/{decoded_key}"
+
+    s3 = boto3.client('s3')
 
     try:
-        response = s3.list_objects_v2(Bucket=S3_BUCKET_NAME, Prefix=decoded_key)
+        response = s3.list_objects_v2(Bucket=S3_BUCKET_NAME, Prefix=object_key)
 
-        if 'Contents' in response and any(obj['Key'] == decoded_key for obj in response['Contents']):
+        if 'Contents' in response and any(obj['Key'] == object_key for obj in response['Contents']):
             url = s3.generate_presigned_url('get_object',
-                                            Params={'Bucket': S3_BUCKET_NAME, 'Key': decoded_key},
+                                            Params={'Bucket': S3_BUCKET_NAME, 'Key': object_key},
                                             ExpiresIn=3600)
             return {
-                'headers': headers,
                 'statusCode': 200,
-                'body': url
+                'body': url,
+                "headers": headers
             }
         else:
             return {
-                'headers': headers,
                 'statusCode': 404,
-                'body': 'Object not found: ' + decoded_key
+                'body': 'Object not found: ' + object_key,
+                "headers": headers
             }
     except Exception as e:
         return {
-            'headers': headers,
             'statusCode': 500,
             'body': f'Error generating URL: {str(e)}'
         }

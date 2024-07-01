@@ -26,8 +26,8 @@ def upload_dynamo_handler(event, context):
             name = body.get('name', '')
             type = body.get('type', '')
             size = body.get('size', '')
-            date_created = body.get('dateCreated', '')  # Note: Use the same key as in input_data
-            date_modified = body.get('dateModified', '')  # Note: Use the same key as in input_data
+            date_created = body.get('dateCreated', '')
+            date_modified = body.get('dateModified', '') #upisuje neke brojeve za oba datuma to fixati posle
 
             table = dynamodb.Table(table_name)
             generated_uuid = str(uuid.uuid4())

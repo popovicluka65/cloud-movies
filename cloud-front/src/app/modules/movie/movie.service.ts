@@ -19,6 +19,11 @@ export class MovieService {
     return this.httpClient.get<Movie>(url);
   }
 
+  getMovieFromS3(id: string): Observable<string> {
+    console.log(environment.apiHost+"getFromS3/"+id);
+    const url = environment.apiHost+"getFromS3/"+id;
+    return this.httpClient.get(url, { responseType: 'text' });
+  }
 
   getMovies(): Observable<Movie[]> {
     const url = environment.apiHost+"movies123";

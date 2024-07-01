@@ -40,8 +40,17 @@ export class MovieDetailsComponent implements AfterViewInit{
       (movie: Movie) => {
         console.log('Received movie:', movie);
         this.movie = movie;
-        
-        // this.playVideo();
+        this.movieService.getMovieFromS3(this.movieId).subscribe(
+              (data) => {
+                  this.videoUrl = data;
+                  console.log('Movie data:', this.videoUrl);
+                  this.playVideo();
+              },
+              (error) => {
+                  console.error('Error fetching movie data:', error);
+              }
+          );
+
       },
       (error) => {
         console.error('Error fetching movie:', error);
@@ -62,7 +71,7 @@ export class MovieDetailsComponent implements AfterViewInit{
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'inception.mp4';
+        a.download = this.movie!.name!;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
