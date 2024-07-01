@@ -86,46 +86,46 @@ class CloudBackStack(Stack):
         )
 
         table_subscricions = dynamodb.Table(
-            self, 'Subscription10Table',
-            table_name='Subscription10Table',
+            self, 'Subscription100Table',
+            table_name='Subscription100Table',
             partition_key={'name': 'subscription_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         table_review = dynamodb.Table(
-            self, 'Review10Table',
-            table_name='Review10Table',
+            self, 'Review100Table',
+            table_name='Review100Table',
             partition_key={'name': 'review_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         table_download = dynamodb.Table(
-            self, 'Download10Table',
-            table_name='Download10Table',
+            self, 'Download100Table',
+            table_name='Download100Table',
             partition_key={'name': 'download_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         table_interaction = dynamodb.Table(
-            self, 'Interaction10Table',
-            table_name='Interaction10Table',
+            self, 'Interaction100Table',
+            table_name='Interaction100Table',
             partition_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         table_feed = dynamodb.Table(
-            self, 'Feed10Table',
-            table_name='Feed10Table',
+            self, 'Feed100Table',
+            table_name='Feed100Table',
             partition_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         user_pool = cognito.UserPool(
-            self, "MovieUserPoolNew",
-            user_pool_name="MovieUserPoolNew",
+            self, "MovieUserPoolFinally",
+            user_pool_name="MovieUserPoolFinally",
             self_sign_up_enabled=True,
             auto_verify=cognito.AutoVerifiedAttrs(email=True),
             password_policy=cognito.PasswordPolicy(
@@ -144,7 +144,7 @@ class CloudBackStack(Stack):
         )
 
         client = cognito.UserPoolClient(
-            self, "MovieUserPoolClientNew",
+            self, "MovieUserPoolClientFinally",
             user_pool=user_pool,
             auth_flows=cognito.AuthFlow(
                 user_password=True,
@@ -215,15 +215,15 @@ class CloudBackStack(Stack):
                     "states:DescribeExecution"
                 ],
                 resources=[
-                    table.table_arn,
                     f"{bucket.bucket_arn}/*",
-                    user_pool.user_pool_arn,
                     topic.topic_arn,
+                    table.table_arn,
                     table_subscricions.table_arn,
                     table_review.table_arn,
                     table_download.table_arn,
                     table_interaction.table_arn,
-                    table_feed.table_arn
+                    table_feed.table_arn,
+                    user_pool.user_pool_arn,
                 ]
             )
         )
@@ -256,8 +256,6 @@ class CloudBackStack(Stack):
                 timeout=Duration.seconds(10),
                 environment={
                     env: database,
-                    'USER_POOL_ID': user_pool.user_pool_id,
-                    'TOPIC_ARN': topic.topic_arn
                 },
                 role=lambda_role
             )
@@ -286,8 +284,6 @@ class CloudBackStack(Stack):
                 environment={
                     "TABLE_NAME": database_dynamo,
                     "BUCKET_NAME": database_s3,
-                    'USER_POOL_ID': user_pool.user_pool_id,
-                    'TOPIC_ARN': topic.topic_arn
                 },
                 role=lambda_role
             )
@@ -347,6 +343,17 @@ class CloudBackStack(Stack):
             [],
             table.table_name,
             bucket.bucket_name
+        )
+
+        add_review_lambda = create_lambda_function(
+            "addReviewFunction",
+            "addReviewFunction",
+            "addReviewHandler.add_review_handler",
+            "addReview",
+            "POST",
+            [],
+            table.table_name,
+            None
         )
 
 
@@ -595,13 +602,21 @@ class CloudBackStack(Stack):
         table.grant_read_data(get_movie_lambda)
         table.grant_read_data(get_single_movie_lambda)
         table.grant_read_data(download_record_lambda)
+        table.grant_read_data(add_review_lambda)
         table_subscricions.add_global_secondary_index(
             index_name='subscriber-index',
             partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
         )
         table_subscricions.grant_read_write_data(subscribe_lambda)
 
+        table_review.add_global_secondary_index(
+            index_name='review-index-review',
+            partition_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
+            #sort_key={'name': 'rate', 'type': dynamodb.AttributeType.STRING}  # Dodavanje sort key-a
+        )
         table_subscricions.grant_read_write_data(put_interaction_lambda)
+
+        table_review.grant_read_write_data(put_interaction_lambda)
 
 
         bucket.grant_read_write(download_movie_lambda)
@@ -688,6 +703,13 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
+        add_review_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
         movie_resource = self.api.root.add_resource("movieNew")
 
         # GET metoda za /movies123
@@ -735,6 +757,12 @@ class CloudBackStack(Stack):
         download_record.add_method("POST",
                                      apigateway.LambdaIntegration(download_record_lambda, credentials_role=api_gateway_role,
                                                                   proxy=True))
+
+        add_review = self.api.root.add_resource("addReviewFunction")
+        add_review.add_method("POST",
+                                   apigateway.LambdaIntegration(add_review_lambda,
+                                                                credentials_role=api_gateway_role,
+                                                                proxy=True))
 
         # deployment nakon dodavanja svih resursa i metoda
         api_deployment_new = apigateway.Deployment(self, "ApiDeploymentTotalNew",

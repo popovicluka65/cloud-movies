@@ -105,4 +105,8 @@ export class MovieDetailsComponent implements AfterViewInit{
   delete() {
 
   }
+
+  review(){
+
+  }
 }

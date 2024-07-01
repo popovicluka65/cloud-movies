@@ -4,7 +4,7 @@ import uuid
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'Subscription10Table'  # Ime DynamoDB tabele
+table_name = 'Subscription100Table'  # Ime DynamoDB tabele
 
 def lambda_handler(event, context):
     table = dynamodb.Table(table_name)

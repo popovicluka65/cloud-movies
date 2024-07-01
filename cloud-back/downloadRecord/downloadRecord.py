@@ -3,7 +3,7 @@ import json
 import uuid
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'Download10Table'
+table_name = 'Download100Table'
 
 
 def download_record_handler(event, context):

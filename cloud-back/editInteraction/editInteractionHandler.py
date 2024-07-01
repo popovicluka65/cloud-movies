@@ -4,11 +4,11 @@ from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
 table_name = 'MoviesTable'
-table_interacion='Interaction10Table'
-table_feed='Feed10Table'
-table_review='Review10Table'
+table_interacion='Interaction100Table'
+table_feed='Feed100Table'
+table_review='Review100Table'
 table_sub='Subscription10Table'
-table_download='Download10Table'
+table_download='Download100Table'
 
 
 def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJE, JEDNU IZMENA, DRUGA CREATE
@@ -38,10 +38,17 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
             }
         )
 
+        values_review = table_review.query(
+            IndexName='review-index-review',
+            KeyConditionExpression='user_id = :user_id',
+            ExpressionAttributeValues={
+                ':user_id': user_id
+            }
+        )
         # values_review = table_review.query(
-        #       IndexName='user_id',
-        #       KeyConditionExpression=Key('user_id').eq(user_id)
-        #   )
+        #     IndexName='review-index-dynamo',
+        #     key_condition_expression=Key('user_id').eq(user_id) & Key('rate').eq(rate)
+        # )
         #
         #
         # values_download = table_download.query(
@@ -54,13 +61,13 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
 
         dict={}
         #
-        # for item in values_subscription['Items']:           #ovo je jacine 5 (subscribe)
-        #     content = item.get('content')
-        #     if content in dict.keys():
-        #         dict[content]+=5
-        #     else:
-        #         dict[content]=5
-        #
+        for item in values_subscription['Items']:           #ovo je jacine 5 (subscribe)
+            content = item.get('content')
+            if content in dict.keys():
+                dict[content]+=5
+            else:
+                dict[content]=5
+
         # # for item in values_review['Items']:
         # #     content=item.get('rate')
         #
@@ -95,12 +102,12 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
         return {
             'headers': headers,
             'statusCode': 200,
-            'body': json.dumps(user_id)
+            'body': json.dumps(dict)
         }
     except Exception as e:
         print(e)
         return {
             'headers': headers,
             'statusCode': 500,
-            'body': json.dumps({'error': str(user_id)})
+            'body': json.dumps({'error': json.dumps(json)})
         }
