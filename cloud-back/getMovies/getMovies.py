@@ -1,9 +1,11 @@
+import decimal
 import json
 import boto3
 
 
 dynamodb = boto3.resource('dynamodb')
 table_name = 'MoviesTable'  # Ime DynamoDB tabele
+
 
 
 def lambda_handler(event, context):
@@ -16,11 +18,10 @@ def lambda_handler(event, context):
     }
     try:
         # Querying the table
-        response = table.scan()  # Ovo će vratiti sve stavke iz tabele, može se prilagoditi za specifične query-je
+        response = table.scan()
 
-
-        # Formiranje odgovora
         movies = response['Items']
+
         return {
             'headers':headers,
             'statusCode': 200,

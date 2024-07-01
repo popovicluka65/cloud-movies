@@ -1,4 +1,5 @@
 export interface Movie{
+  movie_id?: string;
   title?:string;
   description?:string;
   actors?:string[];

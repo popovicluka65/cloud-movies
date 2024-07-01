@@ -58,9 +58,9 @@ export class UploadMovieComponent {
       genres: this.genres,
       name: this.movieFile?.name,
       type: this.movieFile?.type,
-      size: this.movieFile?.size,
-      dateModified: this.movieFile?.lastModified,
-      dateCreated: this.movieFile?.lastModified
+      size: this.movieFile?.size.toString(),
+      dateModified: new Date(this.movieFile!.lastModified).toISOString(),
+      dateCreated: new Date(this.movieFile!.lastModified).toISOString()
     }
     console.log(uploadMovie)
 

@@ -40,10 +40,10 @@ def upload_dynamo_handler(event, context):
                 'director': director,
                 'genres': genres,
                 'name': name,
-                'type': type,
-                'size': size,
-                'date_created': date_created,
-                'date_modified': date_modified
+                'type': str(type),
+                'size': str(size),
+                'date_created': str(date_created),
+                'date_modified': str(date_modified)
             }
 
             table.put_item(Item=item)

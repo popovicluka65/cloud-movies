@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {MovieService} from "../movie.service";
 import { HttpClient } from '@angular/common/http';
+import {ActivatedRoute, Router} from "@angular/router";
 
 
 @Component({
@@ -13,14 +14,21 @@ import { HttpClient } from '@angular/common/http';
 export class MovieDetailsComponent implements AfterViewInit{
 
   @ViewChild('videoPlayer') videoPlayer!: ElementRef;
-  videoUrl: string = ''; // Inicijalno prazan string za video URL
-  constructor(private movieService:MovieService,private http: HttpClient) {}
+  videoUrl: string = '';
+  movieId: string = "";
+
+  constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute) {}
   ngAfterViewInit(): void {
-    this.getMovie();
+      this.route.params.subscribe(params => {
+          const id = params['movieId'];
+          this.movieId = id;
+          this.getMovie();
+      });
+
   }
 
   getMovie() {
-    this.movieService.getMovie("Juzni vetar").subscribe(
+    this.movieService.getMovie(this.movieId).subscribe(
       (movie: string) => {
         console.log('Received movie:', movie);
         this.videoUrl = movie;
