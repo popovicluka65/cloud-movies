@@ -86,16 +86,16 @@ class CloudBackStack(Stack):
         )
 
         table_subscricions = dynamodb.Table(
-            self, 'Subscription2Table',
-            table_name='Subscription2Table',
+            self, 'Subscription10Table',
+            table_name='Subscription10Table',
             partition_key={'name': 'subscription_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         user_pool = cognito.UserPool(
-            self, "MovieUserPool",
-            user_pool_name="MovieUserPool",
+            self, "MovieUserPoolNew",
+            user_pool_name="MovieUserPoolNew",
             self_sign_up_enabled=True,
             auto_verify=cognito.AutoVerifiedAttrs(email=True),
             password_policy=cognito.PasswordPolicy(
@@ -114,7 +114,7 @@ class CloudBackStack(Stack):
         )
 
         client = cognito.UserPoolClient(
-            self, "MovieUserPoolClient",
+            self, "MovieUserPoolClientNew",
             user_pool=user_pool,
             auth_flows=cognito.AuthFlow(
                 user_password=True,
