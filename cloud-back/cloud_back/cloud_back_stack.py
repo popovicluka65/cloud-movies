@@ -327,6 +327,17 @@ class CloudBackStack(Stack):
             bucket.bucket_name
         )
 
+        download_record_lambda = create_lambda_function(
+            "downloadRecord",
+            "downloadRecordUser",
+            "downloadRecord.download_record_handler",
+            "downloadRecord",
+            "POST",
+            [],
+            table.table_name,
+            None
+        )
+
         upload_data = create_lambda_function(
             "uploadMovieData",
             "uploadMovieS3Dynamo",
@@ -583,6 +594,7 @@ class CloudBackStack(Stack):
         # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
         table.grant_read_data(get_movie_lambda)
         table.grant_read_data(get_single_movie_lambda)
+        table.grant_read_data(download_record_lambda)
         table_subscricions.add_global_secondary_index(
             index_name='subscriber-index',
             partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
@@ -669,6 +681,13 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
+        download_record_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
         movie_resource = self.api.root.add_resource("movieNew")
 
         # GET metoda za /movies123
@@ -711,6 +730,11 @@ class CloudBackStack(Stack):
         new_rute_single = self.api.root.add_resource("getSingleMovie")
         new_rute_single_id = new_rute_single.add_resource("{id}")
         new_rute_single_id.add_method("GET", apigateway.LambdaIntegration(get_single_movie_lambda, proxy=True))
+
+        download_record = self.api.root.add_resource("downloadRecordUser")
+        download_record.add_method("POST",
+                                     apigateway.LambdaIntegration(download_record_lambda, credentials_role=api_gateway_role,
+                                                                  proxy=True))
 
         # deployment nakon dodavanja svih resursa i metoda
         api_deployment_new = apigateway.Deployment(self, "ApiDeploymentTotalNew",

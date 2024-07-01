@@ -76,6 +76,20 @@ export class MovieDetailsComponent implements AfterViewInit{
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+        let downloadRecord = {
+            "userId": "popovicluka65@gmail.com",
+            "movie_id": this.movie!.movie_id,
+            "title": this.movie!.title
+        }
+        this.movieService.downloadRecord(downloadRecord).subscribe(
+              (data) => {
+                  console.log('Downloaded data:', data);
+                  // Možete dalje obraditi preuzete podatke ovde
+              },
+              (error) => {
+                  console.error('Error downloading data:', error);
+              }
+          );
       },
       (error) => {
         console.error('Error downloading video:', error);

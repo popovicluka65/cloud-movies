@@ -30,6 +30,11 @@ export class MovieService {
     return this.httpClient.get<Movie[]>(url);
   }
 
+  downloadRecord(downloadRecord: any): Observable<string> {
+    const url = environment.apiHost+"downloadRecordUser";
+    return this.httpClient.post(url, downloadRecord, { responseType: 'text' });
+  }
+
   //dodati sta treba, ovo je samo template, proslediti sta treba, promeniti putanju i potencijalno return...
   uploadMovie(movieData: any): Observable<string> {
     const url = environment.apiHost+"movieS3";
