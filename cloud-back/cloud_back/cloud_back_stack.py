@@ -86,46 +86,46 @@ class CloudBackStack(Stack):
         )
 
         table_subscricions = dynamodb.Table(
-            self, 'Subscription10Table',
-            table_name='Subscription10Table',
+            self, 'Subscription100Table',
+            table_name='Subscription100Table',
             partition_key={'name': 'subscription_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         table_review = dynamodb.Table(
-            self, 'Review10Table',
-            table_name='Review10Table',
+            self, 'Review100Table',
+            table_name='Review100Table',
             partition_key={'name': 'review_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         table_download = dynamodb.Table(
-            self, 'Download10Table',
-            table_name='Download10Table',
+            self, 'Download100Table',
+            table_name='Download100Table',
             partition_key={'name': 'download_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         table_interaction = dynamodb.Table(
-            self, 'Interaction10Table',
-            table_name='Interaction10Table',
+            self, 'Interaction100Table',
+            table_name='Interaction100Table',
             partition_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         table_feed = dynamodb.Table(
-            self, 'Feed10Table',
-            table_name='Feed10Table',
+            self, 'Feed100Table',
+            table_name='Feed100Table',
             partition_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
         user_pool = cognito.UserPool(
-            self, "MovieUserPoolNew",
-            user_pool_name="MovieUserPoolNew",
+            self, "MovieUserPoolFinally",
+            user_pool_name="MovieUserPoolFinally",
             self_sign_up_enabled=True,
             auto_verify=cognito.AutoVerifiedAttrs(email=True),
             password_policy=cognito.PasswordPolicy(
@@ -144,7 +144,7 @@ class CloudBackStack(Stack):
         )
 
         client = cognito.UserPoolClient(
-            self, "MovieUserPoolClientNew",
+            self, "MovieUserPoolClientFinally",
             user_pool=user_pool,
             auth_flows=cognito.AuthFlow(
                 user_password=True,

@@ -1,27 +1,28 @@
 import { Injectable } from '@angular/core';
-import {AuthUser,getCurrentUser,signOut,fetchAuthSession,AuthTokens} from "aws-amplify/auth";
+import {CognitoUser, CognitoUserPool} from "amazon-cognito-identity-js";
+import {environment} from "../../environment/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-
-  constructor() { }
-
-  async getCurrentUser(): Promise<AuthUser>{
-    return await getCurrentUser();
+  private userPool: CognitoUserPool;
+  constructor() {
+    this.userPool = new CognitoUserPool({
+      UserPoolId: environment.userPoolId,
+      ClientId: environment.userPoolClientId
+    });
   }
 
-  async getCurrentSession(): Promise<AuthTokens | undefined>{
-    return (await fetchAuthSession()).tokens;
+  getCurrentUser(): CognitoUser | null {
+    return this.userPool.getCurrentUser();
   }
 
-  async getCurrentUserFullname(): Promise<string|undefined>{
-    let cognito = await (await fetchAuthSession()).tokens;
-    return cognito?.idToken?.payload['name']?.toString();
-  }
-
-  signOut(){
-    signOut();
+  getUsername(): string | null {
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      return currentUser.getUsername();
+    }
+    return null;
   }
 }

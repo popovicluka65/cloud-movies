@@ -5,7 +5,7 @@ import boto3
 import os
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'Feed10Table'
+table_name = 'Feed100Table'
 
 def get_feed_handler(event, context):
     table = dynamodb.Table(table_name)

@@ -4,7 +4,7 @@ import uuid
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'Subscription10Table'  # Ime DynamoDB tabele
+table_name = 'Subscription100Table'  # Ime DynamoDB tabele
 
 def lambda_handler(event, context):
     table = dynamodb.Table(table_name)
@@ -17,16 +17,18 @@ def lambda_handler(event, context):
     try:
         print("Received event:", json.dumps(event))
         body = json.loads(event['body'])
-        # title = body['title']
-        # description = body['description']
+        subscriber = body['subscriber']
+        query = body['query']
+        content_creator = body['content']
 
         generated_uuid = str(uuid.uuid4())
         #posle obrisati samo proveriti da li se unosi id
         subsribtion_id = generated_uuid
         item = {
             'subscription_id':subsribtion_id,
-            'subscriber': "popovicluka65@gmail.com", #subscriber
-            'content': "NEKI GLUMAC"
+            'subscriber': subscriber,
+            'type': query,
+            'content_creator':content_creator
         }
 
         table.put_item(Item=item)

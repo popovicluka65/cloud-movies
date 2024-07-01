@@ -4,11 +4,11 @@ from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
 table_name = 'MoviesTable'
-table_interacion='Interaction10Table'
-table_feed='Feed10Table'
-table_review='Review10Table'
-table_sub='Subscription10Table'
-table_download='Download10Table'
+table_interacion='Interaction100Table'
+table_feed='Feed100Table'
+table_review='Review100Table'
+table_sub='Subscription100Table'
+table_download='Download100Table'
 
 
 def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJE, JEDNU IZMENA, DRUGA CREATE
