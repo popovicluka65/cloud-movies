@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
+import {map, Observable} from "rxjs";
 import {environment} from "../../environment/environment";
+import {PersingedS3} from "../../models/persingedS3";
+
 
 @Injectable({
   providedIn: 'root'
@@ -18,11 +20,24 @@ export class MovieService {
 
   //dodati sta treba, ovo je samo template, proslediti sta treba, promeniti putanju i potencijalno return...
   uploadMovie(movieData: any): Observable<string> {
-    const url = environment.apiHost+"getFromS3";
-    return this.httpClient.post<string>(url, movieData, { responseType: 'text' as 'json' });
+    const url = environment.apiHost+"movieS3";
+    return this.httpClient.post(url, movieData, { responseType: 'text' });
+      // .pipe(
+      // map(response => response.persignedUrl) // Mapiramo odgovor da vratimo samo upload_url
+
   }
+
+  uploadFileToS3(presignedUrl: string, file: File): Observable<string> {
+    const headers = {
+      'Content-Type': file.type
+    };
+    return this.httpClient.put<string>(presignedUrl, file,  { responseType: 'json',headers });
+  }
+
   subscribe(data: any): Observable<string> {
     const url = environment.apiHost+"subscribe";
     return this.httpClient.post<string>(url, data, { responseType: 'json' });
   }
+
+
 }

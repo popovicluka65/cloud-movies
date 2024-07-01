@@ -50,12 +50,32 @@ export class UploadMovieComponent {
     };
     console.log(movie);
     // Add your form submission logic here
+    const uploadMovie = {
+      title: this.title,
+      description: this.description,
+      director: this.director,
+      actors: this.actors,
+      genres: this.genres,
+      name: this.movieFile?.name,
+      type: this.movieFile?.type,
+      size: this.movieFile?.size,
+      dateModified: this.movieFile?.lastModified,
+      dateCreated: this.movieFile?.lastModified
+    }
+    console.log(uploadMovie)
 
-    //valjda radi
-    this.movieService.uploadMovie(movie).subscribe(
+    this.movieService.uploadMovie(uploadMovie).subscribe(
       (response: string) => {
         console.log(response);
-        // Handle success response
+        this.movieService.uploadFileToS3(response, this.movieFile!).subscribe(
+          (response: string) => {
+            console.log(response);
+          },
+          (error: any) => {
+            console.error(error);
+
+          }
+        );
       },
       (error: any) => {
         console.error(error);

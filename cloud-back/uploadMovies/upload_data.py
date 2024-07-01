@@ -13,6 +13,12 @@ S3_BUCKET_NAME = 'content-bucket-cloud-app-movie2'
 S3_FOLDER_PATH = 'movies/'
 
 def upload_data_handler(event, context):
+    headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',  # Or use 'http://localhost:4200/'
+        'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization'
+    }
     try:
         print("Received event:", json.dumps(event))
         body = json.loads(event['body'])
@@ -59,30 +65,29 @@ def upload_data_handler(event, context):
         except Exception as e:
             return {
                 'statusCode': 404,
-                'body': json.dumps({'message': str(e)})
+                'body': json.dumps({'message': str(e)}),
+                'headers': headers
             }
         return {
             'statusCode': 200,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-            },
-            'body': json.dumps({
-                'message': 'Movie added successfully!',
-                'upload_url': presigned_url
-            })
+            'headers': headers,
+            'body': presigned_url
         }
     except NoCredentialsError:
         return {
             'statusCode': 500,
-            'body': json.dumps({'message': 'Credentials not available'})
+            'body': json.dumps({'message': 'Credentials not available'}),
+            'headers': headers
         }
     except PartialCredentialsError:
         return {
             'statusCode': 500,
-            'body': json.dumps({'message': 'Incomplete credentials provided'})
+            'body': json.dumps({'message': 'Incomplete credentials provided'}),
+            'headers': headers
         }
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps({'message': str(e)})
+            'body': json.dumps({'message': str(body)}),
+            'headers': headers
         }
