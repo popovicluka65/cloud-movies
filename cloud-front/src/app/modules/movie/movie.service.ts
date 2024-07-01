@@ -3,6 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {map, Observable} from "rxjs";
 import {environment} from "../../environment/environment";
 import {PersingedS3} from "../../models/persingedS3";
+import {Movie} from "../../models/movie";
 
 
 @Injectable({
@@ -12,10 +13,26 @@ export class MovieService {
 
   constructor(private httpClient:HttpClient) { }
 
-  getMovie(title: string): Observable<string> {
-    console.log(environment.apiHost+"getFromS3/"+title);
-    const url = environment.apiHost+"getFromS3/"+title;
+  getMovie(title: string): Observable<Movie> {
+    console.log(environment.apiHost+"getSingleMovie/"+title);
+    const url = environment.apiHost+"getSingleMovie/"+title;
+    return this.httpClient.get<Movie>(url);
+  }
+
+  getMovieFromS3(id: string): Observable<string> {
+    console.log(environment.apiHost+"getFromS3/"+id);
+    const url = environment.apiHost+"getFromS3/"+id;
     return this.httpClient.get(url, { responseType: 'text' });
+  }
+
+  getMovies(): Observable<Movie[]> {
+    const url = environment.apiHost+"movies123";
+    return this.httpClient.get<Movie[]>(url);
+  }
+
+  downloadRecord(downloadRecord: any): Observable<string> {
+    const url = environment.apiHost+"downloadRecordUser";
+    return this.httpClient.post(url, downloadRecord, { responseType: 'text' });
   }
 
   //dodati sta treba, ovo je samo template, proslediti sta treba, promeniti putanju i potencijalno return...

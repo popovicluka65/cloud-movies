@@ -7,10 +7,11 @@ import {ConfirmEmailComponent} from "./modules/auth/confirm-email/confirm-email.
 import {MovieDetailsComponent} from "./modules/movie/movie-details/movie-details.component";
 import {UploadMovieComponent} from "./modules/movie/upload-movie/upload-movie.component";
 import {SubscribeComponent} from "./modules/layout/subscribe/subscribe.component";
+import {MovieCardsComponent} from "./modules/movie/movie-cards/movie-cards.component";
 
 export const routes: Routes = [
   {path : '', redirectTo: 'home', pathMatch: 'full'},
-  {path : 'home', component : MovieCardComponent},
+  {path : 'home', component : MovieCardsComponent},
   { path : 'login', component : LoginComponent},
   { path  : 'register', component : RegisterComponent},
   {path  : 'verify-email', component :  ConfirmEmailComponent},

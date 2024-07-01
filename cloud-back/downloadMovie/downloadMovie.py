@@ -7,8 +7,10 @@ import urllib.parse
 s3 = boto3.client('s3')
 S3_BUCKET_NAME = 'content-bucket-cloud-app-movie2'
 S3_FOLDER_PATH = 'movies/'
+table_name = 'MoviesTable'
 
 def download_movie_handler(event, context):
+    dynamodb = boto3.resource('dynamodb')
     headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',  # Or use 'http://localhost:4200/'
@@ -37,19 +39,18 @@ def download_movie_handler(event, context):
                                             Params={'Bucket': S3_BUCKET_NAME, 'Key': object_key},
                                             ExpiresIn=3600)
             return {
-                'headers': headers,
                 'statusCode': 200,
-                'body': url
+                'body': url,
+                "headers": headers
             }
         else:
             return {
-                'headers': headers,
                 'statusCode': 404,
-                'body': 'Object not found: ' + object_key
+                'body': 'Object not found: ' + object_key,
+                "headers": headers
             }
     except Exception as e:
         return {
-            'headers': headers,
             'statusCode': 500,
             'body': f'Error generating URL: {str(e)}'
         }

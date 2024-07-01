@@ -1,6 +1,8 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {MovieService} from "../movie.service";
 import { HttpClient } from '@angular/common/http';
+import {ActivatedRoute, Router} from "@angular/router";
+import {Movie} from "../../../models/movie";
 
 
 @Component({
@@ -13,18 +15,42 @@ import { HttpClient } from '@angular/common/http';
 export class MovieDetailsComponent implements AfterViewInit{
 
   @ViewChild('videoPlayer') videoPlayer!: ElementRef;
-  videoUrl: string = ''; // Inicijalno prazan string za video URL
-  constructor(private movieService:MovieService,private http: HttpClient) {}
+  videoUrl: string = '';
+  movieId: string = "";
+  title: string = "";
+  movie: Movie | undefined;
+
+  constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute) {}
   ngAfterViewInit(): void {
-    this.getMovie();
+      this.route.params.subscribe(params => {
+          const id = params['movieId'];
+          let lastIndex =  params['movieId'].lastIndexOf(':');
+          let id2 = params['movieId'].substring(0, lastIndex);
+          let title = params['movieId'].substring(lastIndex + 1);
+          this.movieId = id2;
+          this.title = title
+
+          this.getMovie();
+      });
+
   }
 
   getMovie() {
-    this.movieService.getMovie("Juzni vetar").subscribe(
-      (movie: string) => {
+    this.movieService.getMovie(this.movieId+":"+this.title).subscribe(
+      (movie: Movie) => {
         console.log('Received movie:', movie);
-        this.videoUrl = movie;
-        this.playVideo();
+        this.movie = movie;
+        this.movieService.getMovieFromS3(this.movieId).subscribe(
+              (data) => {
+                  this.videoUrl = data;
+                  console.log('Movie data:', this.videoUrl);
+                  this.playVideo();
+              },
+              (error) => {
+                  console.error('Error fetching movie data:', error);
+              }
+          );
+
       },
       (error) => {
         console.error('Error fetching movie:', error);
@@ -45,11 +71,25 @@ export class MovieDetailsComponent implements AfterViewInit{
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'inception.mp4';
+        a.download = this.movie!.name!;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+        let downloadRecord = {
+            "userId": "popovicluka65@gmail.com",
+            "movie_id": this.movie!.movie_id,
+            "title": this.movie!.title
+        }
+        this.movieService.downloadRecord(downloadRecord).subscribe(
+              (data) => {
+                  console.log('Downloaded data:', data);
+                  // Možete dalje obraditi preuzete podatke ovde
+              },
+              (error) => {
+                  console.error('Error downloading data:', error);
+              }
+          );
       },
       (error) => {
         console.error('Error downloading video:', error);

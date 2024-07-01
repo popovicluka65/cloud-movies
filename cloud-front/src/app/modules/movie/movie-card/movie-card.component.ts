@@ -20,6 +20,6 @@ export class MovieCardComponent {
 
   toDetails(id: string | undefined) {
     console.log(id)
-    this.router.navigate(['/home', id]);
+    this.router.navigate(['/home', id+":"+this.movie.title!]);
   }
 }
