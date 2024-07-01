@@ -86,16 +86,46 @@ class CloudBackStack(Stack):
         )
 
         table_subscricions = dynamodb.Table(
-            self, 'Subscription2Table',
-            table_name='Subscription2Table',
+            self, 'Subscription10Table',
+            table_name='Subscription10Table',
             partition_key={'name': 'subscription_id', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
+        table_review = dynamodb.Table(
+            self, 'Review10Table',
+            table_name='Review10Table',
+            partition_key={'name': 'review_id', 'type': dynamodb.AttributeType.STRING},
+            sort_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
+            stream=dynamodb.StreamViewType.NEW_IMAGE
+        )
+
+        table_download = dynamodb.Table(
+            self, 'Download10Table',
+            table_name='Download10Table',
+            partition_key={'name': 'download_id', 'type': dynamodb.AttributeType.STRING},
+            sort_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
+            stream=dynamodb.StreamViewType.NEW_IMAGE
+        )
+
+        table_interaction = dynamodb.Table(
+            self, 'Interaction10Table',
+            table_name='Interaction10Table',
+            partition_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
+            stream=dynamodb.StreamViewType.NEW_IMAGE
+        )
+
+        table_feed = dynamodb.Table(
+            self, 'Feed10Table',
+            table_name='Feed10Table',
+            partition_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
+            stream=dynamodb.StreamViewType.NEW_IMAGE
+        )
+
         user_pool = cognito.UserPool(
-            self, "MovieUserPool",
-            user_pool_name="MovieUserPool",
+            self, "MovieUserPoolNew",
+            user_pool_name="MovieUserPoolNew",
             self_sign_up_enabled=True,
             auto_verify=cognito.AutoVerifiedAttrs(email=True),
             password_policy=cognito.PasswordPolicy(
@@ -114,7 +144,7 @@ class CloudBackStack(Stack):
         )
 
         client = cognito.UserPoolClient(
-            self, "MovieUserPoolClient",
+            self, "MovieUserPoolClientNew",
             user_pool=user_pool,
             auth_flows=cognito.AuthFlow(
                 user_password=True,
@@ -127,10 +157,10 @@ class CloudBackStack(Stack):
                     'authorization_code_grant': True
                 },
                 'callback_urls': [
-                    'http://localhost:4200'
+                    'http://localhost:4200/'
                 ],
                 'logout_urls': [
-                    'http://localhost:4200'
+                    'http://localhost:4200/'
                 ]
             },
             supported_identity_providers=[
@@ -187,7 +217,11 @@ class CloudBackStack(Stack):
                     f"{bucket.bucket_arn}/*",
                     user_pool.user_pool_arn,
                     topic.topic_arn,
-                    table_subscricions.table_arn
+                    table_subscricions.table_arn,
+                    table_review.table_arn,
+                    table_download.table_arn,
+                    table_interaction.table_arn,
+                    table_feed.table_arn
                 ]
             )
         )
@@ -317,6 +351,66 @@ class CloudBackStack(Stack):
                 ],
                 resources=[
                     table_subscricions.table_arn
+                ]
+            )
+        )
+
+        get_feed_lambda = create_lambda_function(
+            "getFeed",
+            "getFeed",
+            "getFeedHandler.get_feed_handler",
+            "getFeed",
+            "GET",
+            [],
+            table_feed.table_name,
+            None
+        )
+
+        # Dodajte dozvole za pristup DynamoDB tabeli
+        get_feed_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table_feed.table_arn
+                ]
+            )
+        )
+
+        put_interaction_lambda = create_lambda_function(
+            "editInteraction",
+            "editInteraction",
+            "editInteractionHandler.lambda_handler",
+            "editInteraction",
+            "PUT",
+            [],
+            table_interaction.table_name,
+            None
+        )
+
+        # Dodajte dozvole za pristup DynamoDB tabeli
+        put_interaction_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table_interaction.table_arn
                 ]
             )
         )
@@ -458,10 +552,19 @@ class CloudBackStack(Stack):
 
         # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
         table.grant_read_data(get_movie_lambda)
+        table_subscricions.add_global_secondary_index(
+            index_name='subscriber-index',
+            partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
+        )
         table_subscricions.grant_read_write_data(subscribe_lambda)
+
+        table_subscricions.grant_read_write_data(put_interaction_lambda)
+
 
         bucket.grant_read_write(download_movie_lambda)
         bucket.grant_read_write(subscribe_lambda)
+        bucket.grant_read_write(put_interaction_lambda)
+        bucket.grant_read_write(get_feed_lambda)
 
         self.api = apigateway.RestApi(self, "CloudProjectTeam14",
                                  rest_api_name="CloudProject2023",
@@ -503,6 +606,19 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
+        get_feed_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        put_interaction_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
 
         movie_resource = self.api.root.add_resource("movieNew")
 
@@ -533,6 +649,11 @@ class CloudBackStack(Stack):
         subsribe_resource.add_method("POST",
                                   apigateway.LambdaIntegration(subscribe_lambda, credentials_role=api_gateway_role,
                                                                proxy=True))
+
+        interaction_resource = self.api.root.add_resource("interaction")
+        interaction_resource.add_method("PUT",
+                                     apigateway.LambdaIntegration(put_interaction_lambda, credentials_role=api_gateway_role,
+                                                                  proxy=True))
 
         new_rute = self.api.root.add_resource("getFromS3")
         new_rute_id = new_rute.add_resource("{id}")
