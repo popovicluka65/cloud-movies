@@ -13,11 +13,12 @@ export class MovieService {
 
   constructor(private httpClient:HttpClient) { }
 
-  getMovie(title: string): Observable<string> {
-    console.log(environment.apiHost+"getFromS3/"+title);
-    const url = environment.apiHost+"getFromS3/"+title;
-    return this.httpClient.get(url, { responseType: 'text' });
+  getMovie(title: string): Observable<Movie> {
+    console.log(environment.apiHost+"getSingleMovie/"+title);
+    const url = environment.apiHost+"getSingleMovie/"+title;
+    return this.httpClient.get<Movie>(url);
   }
+
 
   getMovies(): Observable<Movie[]> {
     const url = environment.apiHost+"movies123";

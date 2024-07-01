@@ -18,17 +18,17 @@ export class NavbarComponent{
     this.router.navigate(['/register']);
   }
 
-  getMovie() {
-    this.movieService.getMovie("Juzni vetar").subscribe(
-      (movie: string) => {
-        console.log('Received movie:', movie);
-      },
-      (error) => {
-        console.error('Error fetching movie:', error);
-        // Handle error
-      }
-    );
-  }
+  // getMovie() {
+  //   this.movieService.getMovie("Juzni vetar").subscribe(
+  //     (movie: string) => {
+  //       console.log('Received movie:', movie);
+  //     },
+  //     (error) => {
+  //       console.error('Error fetching movie:', error);
+  //       // Handle error
+  //     }
+  //   );
+  // }
   toHome() {
     this.router.navigate(['/home']);
   }

@@ -2,6 +2,7 @@ import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/
 import {MovieService} from "../movie.service";
 import { HttpClient } from '@angular/common/http';
 import {ActivatedRoute, Router} from "@angular/router";
+import {Movie} from "../../../models/movie";
 
 
 @Component({
@@ -16,23 +17,31 @@ export class MovieDetailsComponent implements AfterViewInit{
   @ViewChild('videoPlayer') videoPlayer!: ElementRef;
   videoUrl: string = '';
   movieId: string = "";
+  title: string = "";
+  movie: Movie | undefined;
 
   constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute) {}
   ngAfterViewInit(): void {
       this.route.params.subscribe(params => {
           const id = params['movieId'];
-          this.movieId = id;
+          let lastIndex =  params['movieId'].lastIndexOf(':');
+          let id2 = params['movieId'].substring(0, lastIndex);
+          let title = params['movieId'].substring(lastIndex + 1);
+          this.movieId = id2;
+          this.title = title
+
           this.getMovie();
       });
 
   }
 
   getMovie() {
-    this.movieService.getMovie(this.movieId).subscribe(
-      (movie: string) => {
+    this.movieService.getMovie(this.movieId+":"+this.title).subscribe(
+      (movie: Movie) => {
         console.log('Received movie:', movie);
-        this.videoUrl = movie;
-        this.playVideo();
+        this.movie = movie;
+        
+        // this.playVideo();
       },
       (error) => {
         console.error('Error fetching movie:', error);
