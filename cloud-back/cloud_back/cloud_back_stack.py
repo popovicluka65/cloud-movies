@@ -356,6 +356,17 @@ class CloudBackStack(Stack):
             None
         )
 
+        search_lambda = create_lambda_function(
+            "searchFunction",
+            "searchFunction",
+            "search.search_lambda_handler",
+            "search",
+            "GET",
+            [],
+            table.table_name,
+            None
+        )
+
 
         download_movie_lambda.add_to_role_policy(
             iam.PolicyStatement(
@@ -603,6 +614,7 @@ class CloudBackStack(Stack):
         table.grant_read_data(get_single_movie_lambda)
         table.grant_read_data(download_record_lambda)
         table.grant_read_data(add_review_lambda)
+        table.grant_read_data(search_lambda)
         table_subscricions.add_global_secondary_index(
             index_name='subscriber-index',
             partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
@@ -617,6 +629,13 @@ class CloudBackStack(Stack):
         table_subscricions.grant_read_write_data(put_interaction_lambda)
 
         table_review.grant_read_write_data(put_interaction_lambda)
+
+        table.add_global_secondary_index(
+            index_name='AllAttributesIndex',
+            partition_key={'name': 'all_attributes', 'type': dynamodb.AttributeType.STRING},
+            #sort_key={'name': 'movie_id', 'type': dynamodb.AttributeType.STRING},
+            projection_type=dynamodb.ProjectionType.ALL
+        )
 
 
         bucket.grant_read_write(download_movie_lambda)
@@ -710,6 +729,31 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
+        search_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        search_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table.table_arn
+                ]
+            )
+        )
+
         movie_resource = self.api.root.add_resource("movieNew")
 
         # GET metoda za /movies123
@@ -763,6 +807,12 @@ class CloudBackStack(Stack):
                                    apigateway.LambdaIntegration(add_review_lambda,
                                                                 credentials_role=api_gateway_role,
                                                                 proxy=True))
+
+        search = self.api.root.add_resource("search")
+        search.add_method("GET",
+                              apigateway.LambdaIntegration(search_lambda,
+                                                           credentials_role=api_gateway_role,
+                                                           proxy=True))
 
         # deployment nakon dodavanja svih resursa i metoda
         api_deployment_new = apigateway.Deployment(self, "ApiDeploymentTotalNew",

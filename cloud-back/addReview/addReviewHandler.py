@@ -19,6 +19,8 @@ def add_review_handler(event, context):
         body = json.loads(event['body'])
         user_id = body['username']
         rate = body['rate']
+        movie_id = body['movie_id']
+        title = body['title']
 
         table = dynamodb.Table(table_name)
 
@@ -28,6 +30,8 @@ def add_review_handler(event, context):
             'review_id': generated_uuid,
             'user_id': user_id,
             'rate': rate,
+            'movie_id':movie_id,
+            'title':title
         }
 
         table.put_item(Item=item)
