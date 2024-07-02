@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import {FormsModule} from "@angular/forms";
 import {NgForOf} from "@angular/common";
 import {MovieService} from "../../movie/movie.service";
+import {AuthService} from "../../services/auth.service";
 
 @Component({
   selector: 'app-subscribe',
@@ -18,13 +19,16 @@ export class SubscribeComponent {
   searchQuery: string = '';
   searchOptions: string[] = ['Genre', 'Director', 'Actor'];
 
-  constructor(private movieService:MovieService) {
+  constructor(private movieService:MovieService,private authService:AuthService) {
+    console.log(this.authService.getUsername())
   }
   performSearch() {
     console.log(`Searching for ${this.searchQuery} by ${this.selectedCriteria}`);
+
     const searchData = {
-      searchQuery: this.searchQuery,
-      selectedCriteria: this.selectedCriteria
+      subscriber:this.authService.getUsername(),
+      query: this.searchQuery,
+      content: this.selectedCriteria
     };
 
     this.movieService.subscribe(searchData)

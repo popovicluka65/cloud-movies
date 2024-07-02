@@ -6,6 +6,8 @@ from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 dynamodb = boto3.resource('dynamodb')
 table_name = 'Subscription100Table'  # Ime DynamoDB tabele
 sns_client = boto3.client('sns')
+
+
 def lambda_handler(event, context):
     topic_arn = 'arn:aws:sns:eu-central-1:992382767224:MovieTopic'
     table = dynamodb.Table(table_name)
@@ -37,16 +39,22 @@ def lambda_handler(event, context):
         sns_subscription_response = sns_client.subscribe(
             TopicArn=topic_arn,
             Protocol='email',  # Ili 'sms' ili neki drugi protokol koji koristite
-            Endpoint=subscriber  # Email adresa ili broj telefona pretplatnika
+            Endpoint="popovicluka65@gmail.com",  # Email adresa ili broj telefona pretplatnika
+            # Attributes={
+            #     'FilterPolicy': json.dumps({
+            #         'query': [query]
+            #     })
+            # }
+
         )
 
         # Slanje obaveštenja putem SNS-a
         message = f"Novi sadržaj je objavljen od strane {content_creator}. Pretplatnik: {subscriber}, Tip: {query}"
-        sns_response = sns_client.publish(
-            TopicArn=topic_arn,
-            Message=message,
-            Subject='Obaveštenje o novom sadržaju'
-        )
+        # sns_response = sns_client.publish(
+        #     TopicArn=topic_arn,
+        #     Message=message,
+        #     Subject='Obaveštenje o novom sadržaju'
+        # )
 
         return {
             'headers': headers,

@@ -174,7 +174,8 @@ class CloudBackStack(Stack):
                           topic_name="MovieTopic")
 
         actions_sns = [
-             "sns:Publish"
+             "sns:Publish",
+              "sns:Subscribe"
         ]
 
         topic.add_to_resource_policy(
@@ -212,7 +213,8 @@ class CloudBackStack(Stack):
                     "cognito-idp:AdminRespondToAuthChallenge",
                     "sns:Publish",
                     "states:StartExecution",
-                    "states:DescribeExecution"
+                    "states:DescribeExecution",
+                    "sns:Subscribe"
                 ],
                 resources=[
                     f"{bucket.bucket_arn}/*",
