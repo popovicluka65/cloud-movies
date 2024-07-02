@@ -12,6 +12,9 @@ s3 = boto3.client('s3')
 S3_BUCKET_NAME = 'content-bucket-cloud-app-movie2'
 S3_FOLDER_PATH = 'movies/'
 
+sns = boto3.client('sns')
+sns_topic_arn = 'arn:aws:sns:eu-central-1:992382767224:MovieTopic'
+subscribe_table_name = 'Subscription100Table'
 def upload_data_handler(event, context):
     headers = {
         'Content-Type': 'application/json',
@@ -53,6 +56,8 @@ def upload_data_handler(event, context):
 
         table.put_item(Item=item)
 
+        # Slanje notifikacije na SNS temu
+        send_notifications(title,director,actors,genres)
         try:
             s3.head_bucket(Bucket=S3_BUCKET_NAME)
             presigned_url = s3.generate_presigned_url(
@@ -91,3 +96,19 @@ def upload_data_handler(event, context):
             'body': json.dumps({'message': str(body)}),
             'headers': headers
         }
+
+def send_notifications(title,director,actors,genres):
+    # subscriptions = dynamodb.Table(subscribe_table_name)
+    # for subscription in subscriptions:
+    #     if subscription['type'] == director or subscription['type'] in actors or subscription['type'] in genres:
+            try:
+                message = f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
+
+
+                response = sns.publish(
+                    TopicArn=sns_topic_arn,
+                    Message=message,
+                    Subject='Novi film dostupan'
+                    )
+            except Exception as e:
+                print("Error publishing SNS message:", str(e))
