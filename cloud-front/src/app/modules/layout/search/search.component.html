@@ -1,8 +1,8 @@
 <!-- search.component.html -->
 <div class="search-container">
-  <select [(ngModel)]="selectedCriteria" class="search-criteria">
-    <option *ngFor="let option of searchOptions" [value]="option">{{ option }}</option>
-  </select>
-  <input type="text" [(ngModel)]="searchQuery" placeholder="Enter your search query..." class="search-input"/>
+  <div *ngFor="let option of searchOptions; let i = index">
+    <label>{{ option }}</label>
+    <input type="text" [(ngModel)]="searchQueries[i]" placeholder="Enter {{ option }}..." class="search-input"/>
+  </div>
   <button (click)="performSearch()" class="search-button">Search</button>
 </div>
