@@ -168,6 +168,21 @@ class CloudBackStack(Stack):
             ]
         )
 
+        admin_group = cognito.CfnUserPoolGroup(
+            self, "AdminGroup",
+            group_name="admin",
+            user_pool_id=user_pool.user_pool_id,
+            description="Admin group with elevated privileges"
+        )
+
+        # Kreiranje obične korisničke grupe
+        user_group = cognito.CfnUserPoolGroup(
+            self, "UserGroup",
+            group_name="user",
+            user_pool_id=user_pool.user_pool_id,
+            description="Regular user group"
+        )
+
         # Kreiranje SNS teme
         topic = sns.Topic(self, "MovieTopic",
                           display_name="MovieTopic",
@@ -633,12 +648,11 @@ class CloudBackStack(Stack):
         table_review.grant_read_write_data(put_interaction_lambda)
 
         table.add_global_secondary_index(
-            index_name='AllAttributesIndex',
+            index_name='AllAttributesIndex10',
             partition_key={'name': 'all_attributes', 'type': dynamodb.AttributeType.STRING},
             #sort_key={'name': 'movie_id', 'type': dynamodb.AttributeType.STRING},
             projection_type=dynamodb.ProjectionType.ALL
         )
-
 
         bucket.grant_read_write(download_movie_lambda)
         bucket.grant_read_write(subscribe_lambda)
