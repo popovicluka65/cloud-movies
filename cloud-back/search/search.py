@@ -6,7 +6,7 @@ import os
 
 dynamodb = boto3.resource('dynamodb')
 table_name = 'MoviesTable'
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key,Attr
 
 
 def search_lambda_handler(event, context):
@@ -25,7 +25,7 @@ def search_lambda_handler(event, context):
 
         title = search_params.get('title')
         description = search_params.get('description')
-        director = search_params.get('directors')
+        director = search_params.get('director')
         actors = search_params.get('actors')
         genre = search_params.get('genres')
 
@@ -40,10 +40,13 @@ def search_lambda_handler(event, context):
         if actors!="":
             filter_expression.append('actors = :actors')
             expression_attribute_values[':actors'] = actors
+            actors_list = actors.split(',')
 
-        # if director!="":
-        #     filter_expression.append('director = :director')
-        #     expression_attribute_values[':director'] = director
+        director_list=[]
+        if director!="":
+            filter_expression.append('director = :director')
+            expression_attribute_values[':director'] = director
+            director_list = director.split(',')
 
         if description!="":
             filter_expression.append('description = :description')
@@ -61,23 +64,45 @@ def search_lambda_handler(event, context):
         #             expression_attribute_values[':genre'] = g
         #         filter_expression.append(' OR '.join(genre_filters))
 
-        # # Spajanje filter izraza
-        filter_expression = ' AND '.join(filter_expression)
+        #filter_expression = ' AND '.join(filter_expression)
 
-        search_query=generate_all_attributes(search_params)
+        search_query = generate_all_attributes(search_params)
+        all_q=generate_all_q(search_params)
+
+        # params = {
+        #     'FilterExpression': 'username IN (:user1, :user2)',
+        #     'ExpressionAttributeValues': {
+        #         ':user1': 'john',
+        #         ':user2': 'mike'
+        #     }
+        # }
+
+        # filter_expression = None
+        #
+        # for direct in director_list:
+        #     if filter_expression is None:
+        #         filter_expression = Attr('director').contains(direct)
+        #     else:
+        #         filter_expression = filter_expression | Attr('director').contains(direct)
+
+        # filter_expression = ""
+        #
+        # for direct in director_list:
+        #     if filter_expression:
+        #         filter_expression += " OR "
+        #     filter_expression += f"contains(all_attributes, :direct_{direct.replace(' ', '_')})"
+        #     expression_attribute_values[f":direct_{direct.replace(' ', '_')}"] = direct
 
 
         response = table.query(
-            IndexName='AllAttributesIndex',  # Ime globalnog sekundarnog indeksa
-            KeyConditionExpression=Key('all_attributes').eq(search_query),
-            FilterExpression=filter_expression if filter_expression else None,
-            ExpressionAttributeValues=expression_attribute_values if expression_attribute_values else None
+                IndexName='AllAttributesIndex10',
+                KeyConditionExpression=Key('all_attributes').eq(search_query),
         )
 
         return {
             'headers':headers,
             'statusCode': 200,
-            'body':filter_expression
+            'body':json.dumps({'SQ':str(search_query), 'RES':str(Key('all_attributes')), 'EXPRESION':expression_attribute_values, 'COUNT':response['Items']})
         }
     except Exception as e:
         print(e)
@@ -88,5 +113,34 @@ def search_lambda_handler(event, context):
         }
 
 def generate_all_attributes(params):
-    return f"{params.get('title', '')}_{params.get('description', '')}_{params.get('actors', '')}"
-   #return f"{params.get('title', '')}_{params.get('description', '')}_{params.get('actors', '')}_{params.get('genres', '')}"
+    genres = params.get('genres')
+    genres_str = ','.join(genres) if isinstance(genres, list) else ''
+    return f"{params.get('title', '')}_{params.get('actors', '')}_{params.get('director', '')}_{params.get('description', '')}_[{genres_str}]"
+
+def generate_all_q(params):
+    title = params.get('title')
+    description = params.get('description')
+    director = params.get('director')
+    actors = params.get('actors')
+    genre = params.get('genres')
+
+    actors_list = []
+    if actors != "":
+        actors_list = params.get('actors').split(',')
+
+    director_list = []
+    if director != "":
+        director_list = params.get('director').split(',')
+
+    queues=[]
+
+    for act in actors_list:
+        a=act.strip()
+        for dir in director_list:
+            d=dir.strip()
+            s=f"{params.get('title', '')}_{a}_{d}_{params.get('description', '')}"
+            queues.append(s)
+
+    #q=generate_all_attributes(params)
+    #queues.append(q)
+    return queues
