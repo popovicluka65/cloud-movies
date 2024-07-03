@@ -40,6 +40,13 @@ def upload_data_handler(event, context):
 
         generated_uuid = str(uuid.uuid4())
 
+        all_attributes=title+"_"+actors+"_"+director+"_"+description+"_["
+
+        genres_str = ','.join(genres) if isinstance(genres, list) else ''
+
+        all_attributes=all_attributes+genres_str+"]"
+
+
         item = {
             'movie_id':generated_uuid,
             'title': title,
@@ -51,7 +58,8 @@ def upload_data_handler(event, context):
             'type': str(type),
             'size': str(size),
             'date_created': str(date_created),
-            'date_modified': str(date_modified)
+            'date_modified': str(date_modified),
+            'all_attributes':all_attributes
         }
 
         table.put_item(Item=item)

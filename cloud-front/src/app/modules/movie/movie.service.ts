@@ -30,6 +30,11 @@ export class MovieService {
     return this.httpClient.get<Movie[]>(url);
   }
 
+  searchMovies(): Observable<Movie[]> {
+    const url = environment.apiHost+"movies123";
+    return this.httpClient.get<Movie[]>(url);
+  }
+
   downloadRecord(downloadRecord: any): Observable<string> {
     const url = environment.apiHost+"downloadRecordUser";
     return this.httpClient.post(url, downloadRecord, { responseType: 'text' });

@@ -28,14 +28,12 @@ import {NgForOf} from "@angular/common";
 })
 export class SearchComponent {
   searchOptions: string[] = ['Title', 'Description', 'Director', 'Actor', 'Genre'];
-  selectedCriteria: string = this.searchOptions[0];
-  searchQuery: string = '';
+  searchQueries: string[] = this.searchOptions.map(() => '');
 
   constructor() {
   }
 
   performSearch() {
-    console.log(`Searching for ${this.searchQuery} in ${this.selectedCriteria}`);
-    // Implement your search logic here
+
   }
 }
