@@ -6,9 +6,12 @@ import {MatFormField} from "@angular/material/form-field";
 import {MatInput} from "@angular/material/input";
 import {MatToolbar} from "@angular/material/toolbar";
 import {MatCard} from "@angular/material/card";
-import {CognitoUserAttribute, CognitoUserPool} from "amazon-cognito-identity-js";
+import {CognitoUser, CognitoUserAttribute, CognitoUserPool} from "amazon-cognito-identity-js";
 import {Router} from "@angular/router";
 import {environment} from "../../../environment/environment";
+import AWS from 'aws-sdk';
+import {LayoutModule} from "../../layout/layout.module";
+import {HttpClient} from "@angular/common/http";
 
 @Component({
   selector: 'app-register',
@@ -22,7 +25,8 @@ import {environment} from "../../../environment/environment";
     MatInput,
     MatToolbar,
     MatCard,
-    FormsModule
+    FormsModule,
+    LayoutModule
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
@@ -44,7 +48,7 @@ export class RegisterComponent implements OnInit {
 
   private userPool = new CognitoUserPool(this.userPoolData);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,private httpClient:HttpClient) {}
 
   ngOnInit(): void {}
 
@@ -74,7 +78,20 @@ export class RegisterComponent implements OnInit {
         return;
       }
       console.log('Registration successful:', result);
+      this.addUserToGroup(this.registerUsername,this.registerPassword);
       this.router.navigate(['/verify-email']); // Zameni sa putanjom na koju želiš da preusmeriš korisnika nakon registracije
     });
   }
+
+  addUserToGroup(username:string,password:string){
+    const data = {
+      username:username,
+      password: password,
+    };
+    const url = environment.apiHost+"toGroup";
+    console.log(url)
+    console.log(data)
+    return this.httpClient.post(url, data, { responseType: 'json' });
+  }
+
 }

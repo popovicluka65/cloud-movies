@@ -1,10 +1,10 @@
 <mat-toolbar color="primary">
   <span class="logo" (click)="toHome()">Netlix</span>
   <div>
-    <button (click)="UploadVideo()" mat-button>Upload</button>
-<!--    <button (click)="getMovie()" mat-button>GET MOVIES PROVERA DA LI RADI</button>-->
-    <button (click)="Subscribe()" mat-button>Subscribe</button>
-    <button (click)="Login()" mat-button>Login</button>
-    <button (click)="Signup()" mat-button>Sign up</button>
+    <button *ngIf="role === 'admin'" (click)="UploadVideo()" mat-button>Upload</button>
+    <button *ngIf="role === 'user'" (click)="Subscribe()" mat-button>Subscribe</button>
+    <button *ngIf="role === null" (click)="Login()" mat-button>Login</button>
+    <button *ngIf="role === null" (click)="Signup()" mat-button>Sign up</button>
+    <button *ngIf="role !== null" (click)="SignOut()" mat-button>Signout</button>
   </div>
 </mat-toolbar>

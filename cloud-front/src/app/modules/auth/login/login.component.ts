@@ -8,9 +8,10 @@ import {MatInput} from "@angular/material/input";
 import {AmplifyAuthenticatorModule} from "@aws-amplify/ui-angular";
 import {AuthService} from "../../services/auth.service";
 import {environment} from "../../../environment/environment";
-import { CognitoUserPool, AuthenticationDetails, CognitoUser } from 'amazon-cognito-identity-js';
-import {Router} from "@angular/router";
-
+import { AuthenticationDetails, CognitoUser, CognitoUserPool, CognitoUserSession, CognitoUserAttribute } from 'amazon-cognito-identity-js';
+import {Router} from "@angular/router"; // Prilagodi putanju zavisno od bibliotekeimport {Router} from "@angular/router";
+import * as jwtDecode from 'jwt-decode';
+import {LayoutModule} from "../../layout/layout.module";
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,8 @@ import {Router} from "@angular/router";
     MatToolbar,
     MatInput,
     AmplifyAuthenticatorModule,
-    FormsModule
+    FormsModule,
+    LayoutModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
@@ -33,6 +35,8 @@ export class LoginComponent implements OnInit{
   //gpt generisao
   loginUsername: string = "";
   loginPassword: string = "";
+  userGroup: string = "";
+  Role = "";
 
   private userPoolData = {
     UserPoolId: environment.userPoolId, // Zameni sa svojim User Pool ID
@@ -41,7 +45,7 @@ export class LoginComponent implements OnInit{
 
   private userPool = new CognitoUserPool(this.userPoolData);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,private authService:AuthService) {}
 
   ngOnInit(): void {}
 
@@ -59,9 +63,23 @@ export class LoginComponent implements OnInit{
     const cognitoUser = new CognitoUser(userData);
 
     cognitoUser.authenticateUser(authenticationDetails, {
-      onSuccess: (result) => {
-        console.log('Login successful:', result);
-        this.router.navigate(['/home']); // Zameni sa putanjom na koju želiš da preusmeriš korisnika nakon prijave
+      onSuccess: (session: CognitoUserSession) => {
+        console.log('Login successful:', session);
+
+        // Dohvati informaciju o korisniku
+        console.log(cognitoUser)
+        cognitoUser.getUserAttributes((err, attributes) => {
+          if (err) {
+            console.error('Failed to fetch user attributes:', err);
+            return;
+          }
+
+          const idToken = session.getIdToken().getJwtToken();
+          //dobavi lepo
+          console.log(idToken)
+          localStorage.setItem('currentUser', idToken);
+          this.router.navigate(['/home']);
+        });
       },
       onFailure: (err) => {
         console.error('Login failed:', err);

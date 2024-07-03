@@ -11,8 +11,10 @@ from aws_cdk import (
     aws_stepfunctions_tasks as tasks,
     aws_s3 as s3, aws_lambda_event_sources, RemovalPolicy,
     aws_cognito as cognito,
-    aws_sns as sns
+    aws_sns as sns,
+    custom_resources as cr
 )
+
 #import aws_cdk as core
 from constructs import Construct
 
@@ -183,6 +185,7 @@ class CloudBackStack(Stack):
             description="Regular user group"
         )
 
+
         # Kreiranje SNS teme
         topic = sns.Topic(self, "MovieTopic",
                           display_name="MovieTopic",
@@ -226,6 +229,10 @@ class CloudBackStack(Stack):
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminInitiateAuth",
                     "cognito-idp:AdminRespondToAuthChallenge",
+                    "cognito-idp:AdminAddUserToGroup",
+                    "cognito-idp:AdminRemoveUserFromGroup",
+                    "cognito-idp:AdminGetUser",
+                    "cognito-idp:AdminUpdateUserAttributes",
                     "sns:Publish",
                     "states:StartExecution",
                     "states:DescribeExecution",
@@ -484,6 +491,8 @@ class CloudBackStack(Stack):
                 ]
             )
         )
+
+
         # UPLOAD S3 AND DYNAMO DB---------------------------------------------------
 
         # upload_data_s3 = create_lambda_function(
@@ -557,6 +566,41 @@ class CloudBackStack(Stack):
         # )
         #
 
+        user_to_usergroup_lambda = create_lambda_function(
+            "postToGroup",
+            "toGroup",
+            "user_to_group.lambda_handler",
+            "userToUserGroup",
+            "POST",
+            [],
+            table_subscricions.table_name,
+            None
+        )
+
+        # Dodajte dozvole za pristup DynamoDB tabeli
+        user_to_usergroup_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                    "cognito-idp:AdminCreateUser",
+                    "cognito-idp:AdminSetUserPassword",
+                    "cognito-idp:AdminAddUserToGroup"
+                ],
+                resources=[
+                    table_subscricions.table_arn,
+                    "arn:aws:cognito-idp:eu-central-1:992382767224:userpool/eu-central-1_0OImNFX7r"
+                ]
+            )
+        )
+
+
         # Lambda funkcije
         first_lambda = lambda_.Function(
             self, "FirstLambda",
@@ -611,8 +655,6 @@ class CloudBackStack(Stack):
 
         # Optionally, add permissions to the Step Function execution role
 
-
-
         api_gateway_role = iam.Role(self, "ApiGatewayRole",
                                     assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com"),
                                     description="Role for API Gateway to invoke lambda functions")
@@ -644,6 +686,7 @@ class CloudBackStack(Stack):
             #sort_key={'name': 'rate', 'type': dynamodb.AttributeType.STRING}  # Dodavanje sort key-a
         )
         table_subscricions.grant_read_write_data(put_interaction_lambda)
+        table_subscricions.grant_read_write_data(user_to_usergroup_lambda)
 
         table_review.grant_read_write_data(put_interaction_lambda)
 
@@ -654,10 +697,12 @@ class CloudBackStack(Stack):
             projection_type=dynamodb.ProjectionType.ALL
         )
 
+
         bucket.grant_read_write(download_movie_lambda)
         bucket.grant_read_write(subscribe_lambda)
         bucket.grant_read_write(put_interaction_lambda)
         bucket.grant_read_write(get_feed_lambda)
+        bucket.grant_read_write(user_to_usergroup_lambda)
 
         self.api = apigateway.RestApi(self, "CloudProjectTeam14",
                                  rest_api_name="CloudProject2023",
@@ -677,15 +722,12 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
-
-
         download_movie_lambda.add_permission(
             "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
-
 
         start_upload_data.add_permission(
             "ApiGatewayInvokePermission",
@@ -701,8 +743,7 @@ class CloudBackStack(Stack):
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
-  
-  
+
         subscribe_lambda.add_permission(
             "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
@@ -733,6 +774,14 @@ class CloudBackStack(Stack):
 
         download_record_lambda.add_permission(
             "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+
+        user_to_usergroup_lambda.add_permission(
+          "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             source_arn=self.api.arn_for_execute_api("/*/*/*")
@@ -795,10 +844,19 @@ class CloudBackStack(Stack):
         download_s3_resource_with_id_with_id.add_method("GET", apigateway.LambdaIntegration(download_movie_lambda,
                                                                                             credentials_role=api_gateway_role,
                                                                                             proxy=True))
+
+
+
         subsribe_resource = self.api.root.add_resource("subscribe")
         subsribe_resource.add_method("POST",
-                                  apigateway.LambdaIntegration(subscribe_lambda, credentials_role=api_gateway_role,
-                                                               proxy=True))
+                                   apigateway.LambdaIntegration(subscribe_lambda, credentials_role=api_gateway_role,
+                                                                proxy=True))
+
+        add_user_to_group_resource = self.api.root.add_resource("toGroup")
+        add_user_to_group_resource.add_method("POST",
+                                     apigateway.LambdaIntegration(user_to_usergroup_lambda, credentials_role=api_gateway_role,
+                                                                  proxy=True))
+
 
         interaction_resource = self.api.root.add_resource("interaction")
         interaction_resource.add_method("PUT",

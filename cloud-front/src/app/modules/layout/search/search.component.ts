@@ -30,6 +30,9 @@ export class SearchComponent {
   searchOptions: string[] = ['Title', 'Description', 'Director', 'Actor', 'Genre'];
   searchQueries: string[] = this.searchOptions.map(() => '');
 
+  constructor() {
+  }
+
   performSearch() {
 
   }
