@@ -2,14 +2,16 @@ import { Component } from '@angular/core';
 import {FormsModule} from "@angular/forms";
 import {NgForOf} from "@angular/common";
 import {MovieService} from "../movie.service";
+import {LayoutModule} from "../../layout/layout.module";
 
 @Component({
   selector: 'app-upload-movie',
   standalone: true,
-  imports: [
-    FormsModule,
-    NgForOf
-  ],
+    imports: [
+        FormsModule,
+        NgForOf,
+        LayoutModule
+    ],
   templateUrl: './upload-movie.component.html',
   styleUrl: './upload-movie.component.css'
 })

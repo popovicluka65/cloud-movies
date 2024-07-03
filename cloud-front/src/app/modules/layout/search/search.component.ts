@@ -31,6 +31,9 @@ export class SearchComponent {
   selectedCriteria: string = this.searchOptions[0];
   searchQuery: string = '';
 
+  constructor() {
+  }
+
   performSearch() {
     console.log(`Searching for ${this.searchQuery} in ${this.selectedCriteria}`);
     // Implement your search logic here

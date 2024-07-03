@@ -3,12 +3,20 @@ import {MovieService} from "../movie.service";
 import { HttpClient } from '@angular/common/http';
 import {ActivatedRoute, Router} from "@angular/router";
 import {Movie} from "../../../models/movie";
+import {MatButton} from "@angular/material/button";
+import {NgIf} from "@angular/common";
+import {AuthService} from "../../services/auth.service";
+import {LayoutModule} from "../../layout/layout.module";
 
 
 @Component({
   selector: 'app-movie-details',
   standalone: true,
-  imports: [],
+  imports: [
+    MatButton,
+    NgIf,
+    LayoutModule
+  ],
   templateUrl: './movie-details.component.html',
   styleUrl: './movie-details.component.css'
 })
@@ -19,8 +27,14 @@ export class MovieDetailsComponent implements AfterViewInit{
   movieId: string = "";
   title: string = "";
   movie: Movie | undefined;
+  role: string | null = null;
 
-  constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute) {}
+  constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute,private authService:AuthService) {
+    console.log("ROLEEEE MOVIES")
+    console.log(authService.getRole())
+    this.role = authService.getRole();
+    console.log(this.role);
+  }
   ngAfterViewInit(): void {
       this.route.params.subscribe(params => {
           const id = params['movieId'];

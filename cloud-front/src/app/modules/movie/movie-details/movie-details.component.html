@@ -1,4 +1,4 @@
-
+<app-navbar></app-navbar>
 <div class="movie-card">
   <div class="movie-video">
     <div class="movie-video">
@@ -16,9 +16,9 @@
       <p><strong>Genre:</strong>{{movie?.genres}}</p>
     </div>
     <div class="movie-actions">
-      <button class="movie-button" (click)="edit()">Edit</button>
-      <button class="movie-button" (click)="delete()">Delete</button>
-      <button class="movie-button" (click)="download()">Download</button>
+      <button *ngIf="role === 'admin'"  class="movie-button" (click)="edit()">Edit</button>
+      <button *ngIf="role === 'admin'"  class="movie-button" (click)="delete()">Delete</button>
+      <button *ngIf="role === 'user'" class="movie-button" (click)="download()">Download</button>
     </div>
   </div>
 </div>
