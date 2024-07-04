@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from datetime import datetime, timedelta
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'MoviesTable'
+table_name = 'MoviesTable100'
 table_interacion='Interaction100Table'
 table_feed='Feed100Table'
 table_review='Review100Table'

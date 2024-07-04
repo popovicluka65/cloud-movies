@@ -4,7 +4,7 @@ import boto3
 
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'MoviesTable'  # Ime DynamoDB tabele
+table_name = 'MoviesTable100'  # Ime DynamoDB tabele
 
 
 

@@ -48,7 +48,11 @@ export class MovieService {
       // map(response => response.persignedUrl) // Mapiramo odgovor da vratimo samo upload_url
 
   }
-
+  // putMovie
+  editMovie(movieData: any): Observable<string> {
+    const url = environment.apiHost+"putMovie";
+    return this.httpClient.put(url, movieData, { responseType: 'text' });
+  }
   uploadFileToS3(presignedUrl: string, file: File): Observable<string> {
     const headers = {
       'Content-Type': file.type

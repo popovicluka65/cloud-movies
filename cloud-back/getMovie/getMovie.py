@@ -4,7 +4,7 @@ import boto3
 import json
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'MoviesTable'  # Ime DynamoDB tabele
+table_name = 'MoviesTable100'  # Ime DynamoDB tabele
 
 
 def lambda_handler(event, context):
@@ -30,7 +30,6 @@ def lambda_handler(event, context):
         response = table.get_item(
             Key={
                 'movie_id': movie_id,
-                'title': decoded_key
             }
         )
 
