@@ -8,6 +8,7 @@ import {MovieDetailsComponent} from "./modules/movie/movie-details/movie-details
 import {UploadMovieComponent} from "./modules/movie/upload-movie/upload-movie.component";
 import {SubscribeComponent} from "./modules/layout/subscribe/subscribe.component";
 import {MovieCardsComponent} from "./modules/movie/movie-cards/movie-cards.component";
+import {EditMovieComponent} from "./modules/movie/edit-movie/edit-movie.component";
 
 export const routes: Routes = [
   {path : '', redirectTo: 'home', pathMatch: 'full'},
@@ -18,6 +19,7 @@ export const routes: Routes = [
   {path : "home/:movieId", component:MovieDetailsComponent},
   {path  : 'upload', component : UploadMovieComponent},
   {path  : 'subscribe', component : SubscribeComponent },
+  {path : 'editMovie/:movieId', component: EditMovieComponent}
 
 ];
 

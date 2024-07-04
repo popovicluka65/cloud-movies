@@ -29,7 +29,8 @@ export class MovieDetailsComponent implements AfterViewInit{
   movie: Movie | undefined;
   role: string | null = null;
 
-  constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute,private authService:AuthService) {
+  constructor(private movieService:MovieService,private http: HttpClient,private route:
+    ActivatedRoute,private authService:AuthService, private router: Router) {
     console.log("ROLEEEE MOVIES")
     console.log(authService.getRole())
     this.role = authService.getRole();
@@ -45,6 +46,7 @@ export class MovieDetailsComponent implements AfterViewInit{
           this.title = title
 
           this.getMovie();
+
       });
 
   }
@@ -98,7 +100,7 @@ export class MovieDetailsComponent implements AfterViewInit{
         this.movieService.downloadRecord(downloadRecord).subscribe(
               (data) => {
                   console.log('Downloaded data:', data);
-                  // Možete dalje obraditi preuzete podatke ovde
+
               },
               (error) => {
                   console.error('Error downloading data:', error);
@@ -113,7 +115,7 @@ export class MovieDetailsComponent implements AfterViewInit{
   }
 
   edit() {
-
+    this.router.navigate(['/editMovie', this.movie!.movie_id+":"+this.movie!.title]);
   }
 
   delete() {

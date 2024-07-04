@@ -9,7 +9,7 @@ import {Movie} from "../../../models/movie";
   templateUrl: './movie-card.component.html',
   styleUrl: './movie-card.component.css'
 })
-export class MovieCardComponent {
+export class MovieCardComponent  {
   // @ts-ignore
   @Input() movie: Movie;
   // @ts-ignore
