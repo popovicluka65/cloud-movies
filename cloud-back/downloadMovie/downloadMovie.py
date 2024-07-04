@@ -7,7 +7,7 @@ import urllib.parse
 s3 = boto3.client('s3')
 S3_BUCKET_NAME = 'content-bucket-cloud-app-movie2'
 S3_FOLDER_PATH = 'movies/'
-table_name = 'MoviesTable'
+table_name = 'MoviesTable100'
 
 def download_movie_handler(event, context):
     dynamodb = boto3.resource('dynamodb')

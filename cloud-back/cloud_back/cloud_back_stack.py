@@ -80,10 +80,10 @@ class CloudBackStack(Stack):
 
 
         table = dynamodb.Table(
-            self, 'MoviesTable',
-            table_name='MoviesTable',
+            self, 'MoviesTable100',
+            table_name='MoviesTable100',
             partition_key={'name': 'movie_id', 'type': dynamodb.AttributeType.STRING},
-            sort_key={'name': 'title', 'type': dynamodb.AttributeType.STRING},
+            # sort_key={'name': 'title', 'type': dynamodb.AttributeType.STRING},
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
@@ -364,6 +364,17 @@ class CloudBackStack(Stack):
             "upload_data.upload_data_handler",
             "uploadMovies",
             "POST",
+            [],
+            table.table_name,
+            bucket.bucket_name
+        )
+
+        edit_data = create_lambda_function(
+            "editMovieData",
+            "editMovie",
+            "editMovie.edit_data_handler",
+            "editMovie",
+            "PUT",
             [],
             table.table_name,
             bucket.bucket_name
@@ -667,6 +678,7 @@ class CloudBackStack(Stack):
         ))
 
         bucket.grant_read_write(upload_data)
+        bucket.grant_read_write(edit_data)
 
         # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
         table.grant_read_data(get_movie_lambda)
@@ -691,6 +703,7 @@ class CloudBackStack(Stack):
         )
         table_subscricions.grant_read_write_data(put_interaction_lambda)
         table_subscricions.grant_read_write_data(user_to_usergroup_lambda)
+        table.grant_read_write_data(edit_data)
 
         table_review.grant_read_write_data(put_interaction_lambda)
 
@@ -785,6 +798,13 @@ class CloudBackStack(Stack):
 
 
         user_to_usergroup_lambda.add_permission(
+          "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        edit_data.add_permission(
           "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
@@ -891,6 +911,12 @@ class CloudBackStack(Stack):
                               apigateway.LambdaIntegration(search_lambda,
                                                            credentials_role=api_gateway_role,
                                                            proxy=True))
+
+
+        self.api.root.add_resource("putMovie").add_method("PUT", apigateway.LambdaIntegration(edit_data,
+                                                                                              credentials_role=api_gateway_role,
+                                                                                              proxy=True))
+
 
         # deployment nakon dodavanja svih resursa i metoda
         api_deployment_new = apigateway.Deployment(self, "ApiDeploymentTotalNew",

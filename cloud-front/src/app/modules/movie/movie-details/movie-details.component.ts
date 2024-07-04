@@ -20,7 +20,7 @@ import {LayoutModule} from "../../layout/layout.module";
   templateUrl: './movie-details.component.html',
   styleUrl: './movie-details.component.css'
 })
-export class MovieDetailsComponent implements AfterViewInit{
+export class MovieDetailsComponent implements OnInit {
 
   @ViewChild('videoPlayer') videoPlayer!: ElementRef;
   videoUrl: string = '';
@@ -29,25 +29,49 @@ export class MovieDetailsComponent implements AfterViewInit{
   movie: Movie | undefined;
   role: string | null = null;
 
-  constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute,private authService:AuthService) {
+  constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute,
+              private authService:AuthService, private router: Router) {
     console.log("ROLEEEE MOVIES")
     console.log(authService.getRole())
     this.role = authService.getRole();
     console.log(this.role);
-  }
-  ngAfterViewInit(): void {
-      this.route.params.subscribe(params => {
-          const id = params['movieId'];
-          let lastIndex =  params['movieId'].lastIndexOf(':');
-          let id2 = params['movieId'].substring(0, lastIndex);
-          let title = params['movieId'].substring(lastIndex + 1);
-          this.movieId = id2;
-          this.title = title
+    this.route.params.subscribe(params => {
+      const id = params['movieId'];
+      let lastIndex =  params['movieId'].lastIndexOf(':');
+      let id2 = params['movieId'].substring(0, lastIndex);
+      let title = params['movieId'].substring(lastIndex + 1);
+      this.movieId = id2;
+      this.title = title
 
-          this.getMovie();
-      });
-
+      this.getMovie();
+    });
   }
+
+  ngOnInit(): void {
+        this.route.params.subscribe(params => {
+            const id = params['movieId'];
+            let lastIndex =  params['movieId'].lastIndexOf(':');
+            let id2 = params['movieId'].substring(0, lastIndex);
+            let title = params['movieId'].substring(lastIndex + 1);
+            this.movieId = id2;
+            this.title = title
+
+            this.getMovie();
+        });
+    }
+  // ngAfterViewInit(): void {
+  //     this.route.params.subscribe(params => {
+  //         const id = params['movieId'];
+  //         let lastIndex =  params['movieId'].lastIndexOf(':');
+  //         let id2 = params['movieId'].substring(0, lastIndex);
+  //         let title = params['movieId'].substring(lastIndex + 1);
+  //         this.movieId = id2;
+  //         this.title = title
+  //
+  //         this.getMovie();
+  //     });
+  //
+  // }
 
   getMovie() {
     this.movieService.getMovie(this.movieId+":"+this.title).subscribe(
@@ -58,7 +82,8 @@ export class MovieDetailsComponent implements AfterViewInit{
               (data) => {
                   this.videoUrl = data;
                   console.log('Movie data:', this.videoUrl);
-                  this.playVideo();
+                  this.playVideo()
+
               },
               (error) => {
                   console.error('Error fetching movie data:', error);
@@ -71,6 +96,7 @@ export class MovieDetailsComponent implements AfterViewInit{
       }
     );
   }
+
 
   playVideo() {
     const videoElement = this.videoPlayer.nativeElement;
@@ -113,7 +139,7 @@ export class MovieDetailsComponent implements AfterViewInit{
   }
 
   edit() {
-
+    this.router.navigate(['/editMovie', this.movie!.movie_id+":"+this.movie!.title]);
   }
 
   delete() {

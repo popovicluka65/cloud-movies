@@ -5,7 +5,7 @@ import boto3
 import os
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'MoviesTable'
+table_name = 'MoviesTable100'
 from boto3.dynamodb.conditions import Key,Attr
 
 

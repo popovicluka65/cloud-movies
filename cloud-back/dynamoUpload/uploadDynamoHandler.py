@@ -6,7 +6,7 @@ import os
 from botocore.exceptions import PartialCredentialsError, NoCredentialsError
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'MoviesTable'
+table_name = 'MoviesTable100'
 
 def upload_dynamo_handler(event, context):
 
