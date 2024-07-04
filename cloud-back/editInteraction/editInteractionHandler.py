@@ -1,6 +1,7 @@
 import json
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+from datetime import datetime, timedelta
 
 dynamodb = boto3.resource('dynamodb')
 table_name = 'MoviesTable'
@@ -31,10 +32,10 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
         #Ovde sad treba kreirati tabelu sa User1, vrednosti u paru (comedy, 5) ...
 
         values_subscription=table_subs.query(
-            IndexName='subscriber-index',
-            KeyConditionExpression='subscriber = :subscriber',
+            IndexName='subscriber-index4',
+            KeyConditionExpression='subscriber_email = :subscriber_email',
             ExpressionAttributeValues={
-                ':subscriber': user_id
+                ':subscriber_email': user_id
             }
         )
 
@@ -74,11 +75,13 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
         dict={}
         #
         for item in values_subscription['Items']:           #ovo je jacine 5 (subscribe)
-            content = item.get('content')
+            content = item.get('type')
             if content in dict.keys():
-                dict[content]+=5
+                a=str(content)
+                dict[a]+=5
             else:
-                dict[content]=5
+                a=str(content)
+                dict[a]=5
 
         points_download=3
         for downloadItem in itemsDownloads:                 #ovo je jacine 3 (download)
@@ -144,10 +147,62 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
                             else:
                                 dict[gen]=int(rate_review)-3
 
-        item = {
-            'user_id': {'S': user_id},
-            'content': {'M': dict}
-        }
+        movies_values={}
+
+        movies_values1={}
+
+        p=3
+
+        for movie in itemsMovies:
+            value_movie=0
+            id_movie = movie.get('movie_id')
+            actors = movie.get('actors')
+            directors = movie.get('director')
+            genres_list=movie.get('genres')
+            actors_list=actors.split(",")
+            directors_list=directors.split(",")
+            date_created = movie.get('date_created')
+            for key, value in dict.items():
+                for actor in actors_list:
+                    ac=actor.strip()
+                    if ac==key:
+                        value_movie+=value
+                for director in directors_list:
+                    dir=director.strip()
+                    if dir==key:
+                        value_movie+=value
+                for genre in genres_list:
+                     gen = genre
+                     if gen==key:
+                         value_movie+=value
+            given_date = datetime.strptime(date_created, "%Y-%m-%dT%H:%M:%S.%fZ").date()
+            today = datetime.utcnow().date()
+            three_days_ago = today - timedelta(days=3)
+            seven_days_ago = today - timedelta(days=7)
+            if given_date==today:
+                p=5
+                value_movie*=3
+            if three_days_ago<=given_date<today:
+                value_movie *= 2
+            if seven_days_ago<=given_date<three_days_ago:
+                value_movie*=1.3
+            movies_values[id_movie] = (value_movie,given_date)
+           # movies_values[id_movie]=value_movie
+
+        today_iso_format = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+        #sorted_movies_values = {k: v for k, v in sorted(movies_values.items(), key=lambda item: item[1], reverse=True)}
+
+        #sorted_movies_values = {k: v for k, v in sorted(movies_values.items(), key=lambda item: (item[1][0], item[1][1]), reverse=True)}
+
+        sorted_movies_values = {k: v for k, v in sorted(movies_values.items(), key=lambda item: (item[1][0], -abs(today - item[1][1])), reverse=True)}
+
+        print(sorted_movies_values)
+
+        # item = {
+        #     'user_id': {'S': user_id},
+        #     'content': {'M': dict}
+        # }
 
         # try:
         #     response = dynamodb_client.put_item(
@@ -167,7 +222,7 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
         return {
             'headers': headers,
             'statusCode': 200,
-            'body': json.dumps(dict)
+            'body': json.dumps({"DICT":dict, "A":values_subscription, "RE":str(p)})
         }
     except Exception as e:
         print(e)

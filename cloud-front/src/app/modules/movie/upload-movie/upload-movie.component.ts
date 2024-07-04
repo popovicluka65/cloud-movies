@@ -25,7 +25,7 @@ export class UploadMovieComponent {
 
   genreList: string[] = ['Action', 'Drama', 'Comedy', 'Horror', 'Sci-Fi'];
 
-  constructor(private movieService:MovieService) {
+  constructor(private movieService: MovieService) {
   }
 
   onGenreChange(event: any) {
@@ -62,7 +62,8 @@ export class UploadMovieComponent {
       type: this.movieFile?.type,
       size: this.movieFile?.size.toString(),
       dateModified: new Date(this.movieFile!.lastModified).toISOString(),
-      dateCreated: new Date(this.movieFile!.lastModified).toISOString()
+      //dateCreated: new Date(this.movieFile!.lastModified).toISOString()
+      dateCreated: new Date().toISOString()
     }
     console.log(uploadMovie)
 

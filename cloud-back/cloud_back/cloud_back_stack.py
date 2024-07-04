@@ -675,9 +675,13 @@ class CloudBackStack(Stack):
         table.grant_read_data(add_review_lambda)
         table.grant_read_data(search_lambda)
         table_subscricions.add_global_secondary_index(
-            index_name='subscriber-index',
-            partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
+            index_name='subscriber-index4',
+            partition_key={'name': 'subscriber_email', 'type': dynamodb.AttributeType.STRING}
         )
+        # table_subscricions.add_global_secondary_index(
+        #     index_name='subscriber-index',
+        #     partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
+        # )
         table_subscricions.grant_read_write_data(subscribe_lambda)
 
         table_review.add_global_secondary_index(
