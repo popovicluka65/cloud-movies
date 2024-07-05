@@ -111,6 +111,11 @@ class CloudBackStack(Stack):
             stream=dynamodb.StreamViewType.NEW_IMAGE
         )
 
+        table_download.add_global_secondary_index(
+            index_name='movie_id-index',
+            partition_key={'name': 'movie_id', 'type': dynamodb.AttributeType.STRING}
+        )
+
         table_interaction = dynamodb.Table(
             self, 'Interaction100Table',
             table_name='Interaction100Table',
