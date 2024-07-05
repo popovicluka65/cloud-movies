@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
-import {map, Observable} from "rxjs";
+import {BehaviorSubject, map, Observable} from "rxjs";
 import {environment} from "../../environment/environment";
 import {PersingedS3} from "../../models/persingedS3";
 import {Movie} from "../../models/movie";
@@ -10,8 +10,22 @@ import {Movie} from "../../models/movie";
   providedIn: 'root'
 })
 export class MovieService {
+  private movieList: Movie[] = [];
+  private moviesSubject = new BehaviorSubject<Movie[]>([]);
 
-  constructor(private httpClient:HttpClient) { }
+  movies$ = this.moviesSubject.asObservable();
+
+  constructor(private httpClient:HttpClient) {
+    this.getMovies().subscribe({
+      next: (data: Movie[]) => {
+        this.moviesSubject.next(data);
+        console.log(data);
+      },
+      error: (error) => {
+        console.error("Greška pri dohvatanju filmova", error);
+      }
+    });
+  }
 
   getMovie(title: string): Observable<Movie> {
     console.log(environment.apiHost+"getSingleMovie/"+title);
@@ -105,5 +119,9 @@ export class MovieService {
         }
       })
     );
+  }
+
+  updateMovies(searchedMovies: Movie[]) {
+    this.moviesSubject.next(searchedMovies);
   }
 }

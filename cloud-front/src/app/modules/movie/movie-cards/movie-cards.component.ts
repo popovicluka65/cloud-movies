@@ -27,10 +27,16 @@ export class MovieCardsComponent implements  OnInit {
     constructor(private movieService: MovieService) {
     }
   ngOnInit(): void {
-    console.log("cao")
-    this.loadMovies();
-
-
+    this.movieService.movies$.subscribe({
+      next: (data: Movie[]) => {
+        this.movies = data;
+        console.log("AAAA")
+        console.log(this.movies)
+      },
+      error: (_) => {
+        console.log("Greska!")
+      }
+    })
   }
 
   loadMovies(): void {
@@ -41,7 +47,6 @@ export class MovieCardsComponent implements  OnInit {
 
       },
       (error) => {
-        // console.error('Error fetching movies', error);
       }
     );
   }

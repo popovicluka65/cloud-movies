@@ -53,15 +53,11 @@ export class SearchComponent {
         console.log('Search Results:', results);
         // Handle the search results here
         this.searchedMovies = results;
-        console.log("AAAA")
-        console.log(this.searchedMovies)
+        this.movieService.updateMovies(this.searchedMovies);
 
       },
       (error) => {-+
-
-
         console.error('Search Error:', error);
-        // Handle the error here
       }
     );
   }

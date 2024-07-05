@@ -13,6 +13,7 @@ import {Router} from "@angular/router"; // Prilagodi putanju zavisno od bibliote
 import * as jwtDecode from 'jwt-decode';
 import {LayoutModule} from "../../layout/layout.module";
 import {MovieService} from "../../movie/movie.service";
+import {Movie} from "../../../models/movie";
 
 @Component({
   selector: 'app-login',
@@ -81,10 +82,9 @@ export class LoginComponent implements OnInit{
           localStorage.setItem('currentUser', idToken);
           console.log(this.loginUsername)
           this.router.navigate(['/home']);
-          console.log("GET FEED")
           this.movieService.getFeed(this.loginUsername).subscribe(
-            (movies:any) => {
-              console.log('Dobijeni filmovi:', movies);
+            (movies:Movie[]) => {
+              this.movieService.updateMovies(movies);
             },
             (error) => {
               console.error('Greška prilikom dobavljanja filmova:', error);
