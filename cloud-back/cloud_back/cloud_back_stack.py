@@ -396,7 +396,7 @@ class CloudBackStack(Stack):
             "searchFunction",
             "search.search_lambda_handler",
             "search",
-            "GET",
+            "POST",
             [],
             table.table_name,
             None
@@ -907,10 +907,16 @@ class CloudBackStack(Stack):
                                                                 proxy=True))
 
         search = self.api.root.add_resource("search")
-        search.add_method("GET",
+        search.add_method("POST",
                               apigateway.LambdaIntegration(search_lambda,
                                                            credentials_role=api_gateway_role,
                                                            proxy=True))
+
+        get_feed = self.api.root.add_resource("feed")
+        get_feed.add_method("GET",
+                          apigateway.LambdaIntegration(get_feed_lambda,
+                                                       credentials_role=api_gateway_role,
+                                                       proxy=True))
 
 
         self.api.root.add_resource("putMovie").add_method("PUT", apigateway.LambdaIntegration(edit_data,
