@@ -29,15 +29,15 @@ export class MovieDetailsComponent implements OnInit {
   movie: Movie | undefined;
   role: string | null = null;
 
-  constructor(private movieService:MovieService,private http: HttpClient,private route: ActivatedRoute,
-              private authService:AuthService, private router: Router) {
+  constructor(private movieService: MovieService, private http: HttpClient, private route: ActivatedRoute,
+              private authService: AuthService, private router: Router) {
     console.log("ROLEEEE MOVIES")
     console.log(authService.getRole())
     this.role = authService.getRole();
     console.log(this.role);
     this.route.params.subscribe(params => {
       const id = params['movieId'];
-      let lastIndex =  params['movieId'].lastIndexOf(':');
+      let lastIndex = params['movieId'].lastIndexOf(':');
       let id2 = params['movieId'].substring(0, lastIndex);
       let title = params['movieId'].substring(lastIndex + 1);
       this.movieId = id2;
@@ -48,17 +48,18 @@ export class MovieDetailsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-        this.route.params.subscribe(params => {
-            const id = params['movieId'];
-            let lastIndex =  params['movieId'].lastIndexOf(':');
-            let id2 = params['movieId'].substring(0, lastIndex);
-            let title = params['movieId'].substring(lastIndex + 1);
-            this.movieId = id2;
-            this.title = title
+    this.route.params.subscribe(params => {
+      const id = params['movieId'];
+      let lastIndex = params['movieId'].lastIndexOf(':');
+      let id2 = params['movieId'].substring(0, lastIndex);
+      let title = params['movieId'].substring(lastIndex + 1);
+      this.movieId = id2;
+      this.title = title
 
-            this.getMovie();
-        });
-    }
+      this.getMovie();
+    });
+  }
+
   // ngAfterViewInit(): void {
   //     this.route.params.subscribe(params => {
   //         const id = params['movieId'];
@@ -74,21 +75,21 @@ export class MovieDetailsComponent implements OnInit {
   // }
 
   getMovie() {
-    this.movieService.getMovie(this.movieId+":"+this.title).subscribe(
+    this.movieService.getMovie(this.movieId + ":" + this.title).subscribe(
       (movie: Movie) => {
         console.log('Received movie:', movie);
         this.movie = movie;
         this.movieService.getMovieFromS3(this.movieId).subscribe(
-              (data) => {
-                  this.videoUrl = data;
-                  console.log('Movie data:', this.videoUrl);
-                  this.playVideo()
+          (data) => {
+            this.videoUrl = data;
+            console.log('Movie data:', this.videoUrl);
+            this.playVideo()
 
-              },
-              (error) => {
-                  console.error('Error fetching movie data:', error);
-              }
-          );
+          },
+          (error) => {
+            console.error('Error fetching movie data:', error);
+          }
+        );
 
       },
       (error) => {
@@ -105,9 +106,10 @@ export class MovieDetailsComponent implements OnInit {
     videoElement.play();
   }
 
-  download() {this.http.get(this.videoUrl, { responseType: 'blob' }).subscribe(
+  download() {
+    this.http.get(this.videoUrl, {responseType: 'blob'}).subscribe(
       (response: Blob) => {
-        const blob = new Blob([response], { type: 'video/mp4' });
+        const blob = new Blob([response], {type: 'video/mp4'});
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -117,19 +119,19 @@ export class MovieDetailsComponent implements OnInit {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         let downloadRecord = {
-            "userId": "popovicluka65@gmail.com",
-            "movie_id": this.movie!.movie_id,
-            "title": this.movie!.title
+          "userId": "popovicluka65@gmail.com",
+          "movie_id": this.movie!.movie_id,
+          "title": this.movie!.title
         }
         this.movieService.downloadRecord(downloadRecord).subscribe(
-              (data) => {
-                  console.log('Downloaded data:', data);
-                  // Možete dalje obraditi preuzete podatke ovde
-              },
-              (error) => {
-                  console.error('Error downloading data:', error);
-              }
-          );
+          (data) => {
+            console.log('Downloaded data:', data);
+            // Možete dalje obraditi preuzete podatke ovde
+          },
+          (error) => {
+            console.error('Error downloading data:', error);
+          }
+        );
       },
       (error) => {
         console.error('Error downloading video:', error);
@@ -139,14 +141,13 @@ export class MovieDetailsComponent implements OnInit {
   }
 
   edit() {
-    this.router.navigate(['/editMovie', this.movie!.movie_id+":"+this.movie!.title]);
+    this.router.navigate(['/editMovie', this.movie!.movie_id + ":" + this.movie!.title]);
   }
 
   delete() {
 
   }
-
-  review(){
+  review() {
 
   }
 }

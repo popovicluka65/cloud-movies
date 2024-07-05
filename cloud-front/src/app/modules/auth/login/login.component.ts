@@ -12,6 +12,7 @@ import { AuthenticationDetails, CognitoUser, CognitoUserPool, CognitoUserSession
 import {Router} from "@angular/router"; // Prilagodi putanju zavisno od bibliotekeimport {Router} from "@angular/router";
 import * as jwtDecode from 'jwt-decode';
 import {LayoutModule} from "../../layout/layout.module";
+import {MovieService} from "../../movie/movie.service";
 
 @Component({
   selector: 'app-login',
@@ -45,7 +46,7 @@ export class LoginComponent implements OnInit{
 
   private userPool = new CognitoUserPool(this.userPoolData);
 
-  constructor(private router: Router,private authService:AuthService) {}
+  constructor(private router: Router,private authService:AuthService,private movieService:MovieService) {}
 
   ngOnInit(): void {}
 
@@ -78,7 +79,17 @@ export class LoginComponent implements OnInit{
           //dobavi lepo
           console.log(idToken)
           localStorage.setItem('currentUser', idToken);
+          console.log(this.loginUsername)
           this.router.navigate(['/home']);
+          console.log("GET FEED")
+          this.movieService.getFeed(this.loginUsername).subscribe(
+            (movies:any) => {
+              console.log('Dobijeni filmovi:', movies);
+            },
+            (error) => {
+              console.error('Greška prilikom dobavljanja filmova:', error);
+            }
+          );
         });
       },
       onFailure: (err) => {

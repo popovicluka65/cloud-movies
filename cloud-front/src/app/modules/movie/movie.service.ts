@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import {map, Observable} from "rxjs";
 import {environment} from "../../environment/environment";
 import {PersingedS3} from "../../models/persingedS3";
@@ -26,12 +26,7 @@ export class MovieService {
   }
 
   getMovies(): Observable<Movie[]> {
-    const url = environment.apiHost+"movies123";
-    return this.httpClient.get<Movie[]>(url);
-  }
-
-  searchMovies(): Observable<Movie[]> {
-    const url = environment.apiHost+"movies123";
+    const url = environment.apiHost + "movies123";
     return this.httpClient.get<Movie[]>(url);
   }
 
@@ -66,5 +61,49 @@ export class MovieService {
     return this.httpClient.post<string>(url, data, { responseType: 'json' });
   }
 
+  getFeed(username: string): Observable<any> {
+    const url = `${environment.apiHost}feed`;
+    const body = {
+      user_id: username
+    };
 
+    const options = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      })
+    };
+
+    return this.httpClient.post<any>(url, body, options);
+  }
+  searchMovies(searchParams: any): Observable<any> {
+    const url = environment.apiHost+"search";
+    console.log(url)
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.httpClient.post<any>(url, searchParams, { headers }).pipe(
+      map(response => {
+        // Ako je odgovor strukturiran kao vaš prethodno prikazani objekt
+        if (response.COUNT && Array.isArray(response.COUNT)) {
+          // @ts-ignore
+          return response.COUNT.map(item => ({
+            movie_id: item.movie_id,
+            size: item.size,
+            date_modified: item.date_modified,
+            director: item.director,
+            actors: item.actors,
+            date_created: item.date_created,
+            description: item.description,
+            genres: item.genres,
+            name: item.name,
+            all_attributes: item.all_attributes,
+            title: item.title,
+            type: item.type
+          })) as Movie[];
+        } else {
+          // Ako odgovor nije u očekivanom formatu, možete obraditi grešku ili vratiti prazan niz
+          console.error('Neočekivan format odgovora');
+          return [];
+        }
+      })
+    );
+  }
 }
