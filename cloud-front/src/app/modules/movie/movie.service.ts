@@ -139,7 +139,7 @@ export class MovieService {
       movie_id: movieId,
       title: title
     };
-    return this.httpClient.post(`${environment.apiHost}/addReviewFunction`, body);
+    return this.httpClient.post(`${environment.apiHost}addReviewFunction`, body);
   }
 
   getSubscribeByUser(username: string | null): Observable<any> {

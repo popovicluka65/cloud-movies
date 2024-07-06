@@ -18,6 +18,7 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
     table_downloads=dynamodb.Table(table_download)
     table_reviews=dynamodb.Table(table_review)
     table_interacions=dynamodb.Table(table_interacion)
+    table_feeds=dynamodb.Table(table_feed)
     headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',  # Or use 'http://localhost:4200/'
@@ -199,6 +200,35 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
 
         print(sorted_movies_values)
 
+        interaction_movies_values={}
+
+        feed_movies_values = []
+
+        for key, value in sorted_movies_values.items():
+            a,b=value
+            date_str = b.strftime('%Y-%m-%d')
+            print(date_str)
+            interaction_movies_values[key]=(a,date_str)
+
+        print(interaction_movies_values)
+
+        item = {
+            'user_id': user_id,
+            'values': json.dumps(interaction_movies_values)
+        }
+
+        table_interacions.put_item(Item=item)
+
+        for key, value in interaction_movies_values.items():
+            feed_movies_values.append(key)
+
+        item1 = {
+            'user_id': user_id,
+            'movies_ids': feed_movies_values
+        }
+
+        table_feeds.put_item(Item=item1)
+
         # item = {
         #     'user_id': {'S': user_id},
         #     'content': {'M': dict}
@@ -229,5 +259,5 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
         return {
             'headers': headers,
             'statusCode': 500,
-            'body': json.dumps({'error': json.dumps(items)})
+            'body': json.dumps({'error': json.dumps(e)})
         }
