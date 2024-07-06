@@ -25,9 +25,9 @@ export class SubscribeComponent {
 
   constructor(private movieService:MovieService,private authService:AuthService) {
     this.searchResults = [
-      { type: 'Type 1', contentCreator: 'Creator 1' },
-      { type: 'Type 2', contentCreator: 'Creator 2' },
-      { type: 'Type 3', contentCreator: 'Creator 3' }
+      { id:"1", type: 'Type 1', contentCreator: 'Creator 1' },
+      { id:"2",type: 'Type 2', contentCreator: 'Creator 2' },
+      { id:"3",type: 'Type 3', contentCreator: 'Creator 3' }
     ];
   }
   performSearch() {
@@ -50,7 +50,9 @@ export class SubscribeComponent {
       );
   }
 
-  clearResults() {
-
+  clearResults(id:string) {
+    console.log("DELETE")
+    console.log(id)
+    this.movieService.deleteSubscribe(id);
   }
 }

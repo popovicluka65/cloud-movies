@@ -33,7 +33,7 @@ AWS.config.region = 'eu-central-1'; // Postavite vaš region ovde
 
 export class ConfirmEmailComponent implements OnInit {
   confirmationCode: string = "";
-  email: string = "";
+  username: string = "";
   message:string ="";
 
   constructor(private router: Router, private route: ActivatedRoute) {}
@@ -47,15 +47,16 @@ export class ConfirmEmailComponent implements OnInit {
 
   ngOnInit(): void {
     // Preuzimanje parametara iz URL-a, ako je potrebno
-    // this.route.queryParams.subscribe(params => {
-    //   this.email = params['email'];
-    // });
-    this.email="matijap59@gmail.com";
+    this.route.params.subscribe(params => {
+      this.username = params['username']; // Dobavljanje vrednosti parametra "username"
+      console.log("Username:", this.username); // Možete dodati ovde konzolu da proverite da li se vrednost dobija
+    });
+    //this.email="matijap59@gmail.com";
   }
 
   confirmRegistration() {
     const userData = {
-      Username: this.email,
+      Username: this.username,
       Pool: this.userPool
     };
 

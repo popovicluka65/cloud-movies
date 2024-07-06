@@ -7,6 +7,7 @@ import {MatButton} from "@angular/material/button";
 import {NgIf} from "@angular/common";
 import {AuthService} from "../../services/auth.service";
 import {LayoutModule} from "../../layout/layout.module";
+import {FormsModule} from "@angular/forms";
 
 
 @Component({
@@ -15,7 +16,8 @@ import {LayoutModule} from "../../layout/layout.module";
   imports: [
     MatButton,
     NgIf,
-    LayoutModule
+    LayoutModule,
+    FormsModule
   ],
   templateUrl: './movie-details.component.html',
   styleUrl: './movie-details.component.css'
@@ -28,6 +30,7 @@ export class MovieDetailsComponent implements OnInit {
   title: string = "";
   movie: Movie | undefined;
   role: string | null = null;
+  selectedRating: number = 0;
 
   constructor(private movieService: MovieService, private http: HttpClient, private route: ActivatedRoute,
               private authService: AuthService, private router: Router) {
@@ -59,21 +62,6 @@ export class MovieDetailsComponent implements OnInit {
       this.getMovie();
     });
   }
-
-  // ngAfterViewInit(): void {
-  //     this.route.params.subscribe(params => {
-  //         const id = params['movieId'];
-  //         let lastIndex =  params['movieId'].lastIndexOf(':');
-  //         let id2 = params['movieId'].substring(0, lastIndex);
-  //         let title = params['movieId'].substring(lastIndex + 1);
-  //         this.movieId = id2;
-  //         this.title = title
-  //
-  //         this.getMovie();
-  //     });
-  //
-  // }
-
   getMovie() {
     this.movieService.getMovie(this.movieId + ":" + this.title).subscribe(
       (movie: Movie) => {
@@ -97,7 +85,6 @@ export class MovieDetailsComponent implements OnInit {
       }
     );
   }
-
 
   playVideo() {
     const videoElement = this.videoPlayer.nativeElement;
@@ -147,7 +134,26 @@ export class MovieDetailsComponent implements OnInit {
   delete() {
 
   }
-  review() {
+  rateContent(): void {
+    // Implementacija funkcije za ocenjivanje sadržaja
+    if (this.selectedRating) {
+      console.log(`Ocenili ste sadržaj sa ${this.selectedRating} zvezdica.`);
+      // Dodajte logiku za slanje ocene na server ili neki drugi postupak za čuvanje ocene
+    } else {
+      console.log('Molimo izaberite ocenu pre nego što ocenite sadržaj.');
+    }
 
+    //problem je jer je ovo cognito user, potencijalno zameniti
+    this.movieService.addReview(this.authService.getUsername(), this.selectedRating,this.movieId, this.title)
+      .subscribe(
+        response => {
+          console.log('Review added successfully:', response);
+          // Ovde možete dodati logiku za obradu odgovora ako je potrebno
+        },
+        error => {
+          console.error('Error adding review:', error);
+          // Ovde možete dodati logiku za upravljanje greškom
+        }
+      );
   }
 }

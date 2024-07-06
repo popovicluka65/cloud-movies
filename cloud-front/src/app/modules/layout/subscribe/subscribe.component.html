@@ -19,9 +19,10 @@
   </thead>
   <tbody>
   <tr *ngFor="let result of searchResults">
+    <td>{{ result.id }}</td>
     <td>{{ result.type }}</td>
     <td>{{ result.contentCreator }}</td>
-   <td><button *ngIf="searchResults && searchResults.length > 0" class="delete-button" (click)="clearResults()">Unsubscribe</button></td>
+   <td><button *ngIf="searchResults && searchResults.length > 0" class="delete-button" (click)="clearResults(result.id)">Unsubscribe</button></td>
   </tr>
   </tbody>
 

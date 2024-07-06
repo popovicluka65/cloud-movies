@@ -14,7 +14,6 @@ headers = {
     'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
     'Access-Control-Allow-Headers': 'Content-Type,Authorization'
 }
-
 def lambda_handler(event, context):
     try:
         print("Received event:", json.dumps(event))
@@ -79,29 +78,19 @@ def lambda_handler(event, context):
             'body': json.dumps({'message': str(e)})
         }
 
-
+#proveriti ovo posle deploy kad zavrse ovi
 def get_subscribes(event, context):
     try:
-        print("Received event:", json.dumps(event))
-        body = json.loads(event['body'])
-        username = body['username']
-        response = table.scan()
+        # Uzimanje staze (path) iz event objekta
+        path = event['path']
+        path_parts = path.split('/')
+        username = path_parts[-1]
 
-        items = response['Items']
-        for item in items:
-            print(item)
+        response = table.scan(
+            FilterExpression=Attr('subscriber').eq(username)
+        )
+        print(response)
 
-        body_response = {
-            'message': 'Successful get subscribe',
-            'items': items # Dodajte stavke iz DynamoDB tabele u odgovor
-        }
-
-        # Vraćanje HTTP odgovora
-        return {
-            'headers': headers,
-            'statusCode': 200,
-            'body': json.dumps(body_response)
-        }
     except NoCredentialsError:
         return {
             'headers': headers,

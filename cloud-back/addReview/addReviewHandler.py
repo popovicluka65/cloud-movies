@@ -5,7 +5,6 @@ import boto3
 
 dynamodb = boto3.resource('dynamodb')
 table_name = 'Review100Table'
-
 def add_review_handler(event, context):
     headers = {
         'Content-Type': 'application/json',

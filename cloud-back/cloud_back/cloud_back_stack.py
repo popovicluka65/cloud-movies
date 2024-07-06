@@ -138,7 +138,8 @@ class CloudBackStack(Stack):
                 require_symbols=False
 
             ),
-            sign_in_aliases=cognito.SignInAliases(email=True),
+            #AKO HOCEMO DA username mora @gmail.com otkomentarisati ovo
+            #sign_in_aliases=cognito.SignInAliases(email=True),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
             standard_attributes=cognito.StandardAttributes(
                 email=cognito.StandardAttribute(required=True)
