@@ -127,8 +127,8 @@ export class MovieService {
     this.moviesSubject.next(searchedMovies);
   }
 
-  deleteSubscribe(id: string) {
-    const url = `${environment.apiHost}/unsubscribe/` + id;
+  deleteSubscribe(id: string, username: string | null) {
+    const url = `${environment.apiHost}/unsubscribe/` + id+'/'+username;
     return this.httpClient.delete(url);
   }
 
@@ -140,5 +140,15 @@ export class MovieService {
       title: title
     };
     return this.httpClient.post(`${environment.apiHost}/addReviewFunction`, body);
+  }
+
+  getSubscribeByUser(username: string | null): Observable<any> {
+    const url = environment.apiHost + "getSubscribe/"+username;
+    return this.httpClient.get<any>(url);
+  }
+
+  deleteMovie(movieId: string) {
+    const url = `${environment.apiHost}/deleteMovie/` + movieId;
+    return this.httpClient.delete(url);
   }
 }

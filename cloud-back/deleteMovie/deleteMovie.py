@@ -17,29 +17,12 @@ def lambda_handler(event, context):
     try:
         path = event['path']
         path_parts = path.split('/')
-        partition_key = path_parts[-2]
-        subscriber = path_parts[-1]
-        response_delete = table.delete_item(
-                Key={
-                    'subscription_id': partition_key,
-                    'subscriber':subscriber
-                }
-            )
-
-        print(response_delete)
-
+        partition_key = path_parts[-1]
+        print(partition_key)
         return {
-                'headers': headers,
-                'statusCode': 200,
-                'body': json.dumps({'message': f'Deleted item'})
-            }
-        # else:
-        #     return {
-        #         'headers': headers,
-        #         'statusCode': 404,
-        #         'body': json.dumps({'message': f'Id {partition_key} not found'})
-        #     }
-
+            'headers': headers,
+            'statusCode': 200
+        }
     except NoCredentialsError:
         return {
             'headers': headers,

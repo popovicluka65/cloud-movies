@@ -1,6 +1,7 @@
 import json
 import boto3
 import uuid
+from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 dynamodb = boto3.resource('dynamodb')
@@ -85,24 +86,21 @@ def get_subscribes(event, context):
         path = event['path']
         path_parts = path.split('/')
         username = path_parts[-1]
-
+        print(username)
         response = table.scan(
             FilterExpression=Attr('subscriber').eq(username)
         )
-        print(response)
+        items = response.get('Items', [])
 
-    except NoCredentialsError:
         return {
             'headers': headers,
-            'statusCode': 500,
-            'body': json.dumps({'message': 'Credentials not available'})
+            'statusCode': 200,
+            'body': json.dumps({
+                'message': 'Successful get subscriptons, '+username,
+                'data': items
+            })
         }
-    except PartialCredentialsError:
-        return {
-            'headers': headers,
-            'statusCode': 500,
-            'body': json.dumps({'message': 'Incomplete credentials provided'})
-        }
+
     except Exception as e:
         return {
             'headers': headers,

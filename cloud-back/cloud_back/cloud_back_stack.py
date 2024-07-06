@@ -139,7 +139,7 @@ class CloudBackStack(Stack):
 
             ),
             #AKO HOCEMO DA username mora @gmail.com otkomentarisati ovo
-            #sign_in_aliases=cognito.SignInAliases(email=True),
+            sign_in_aliases=cognito.SignInAliases(email=True),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
             standard_attributes=cognito.StandardAttributes(
                 email=cognito.StandardAttribute(required=True)
@@ -443,6 +443,95 @@ class CloudBackStack(Stack):
             )
         )
 
+        get_subscribe_lambda = create_lambda_function(
+            "getSubscribe",
+            "getSubscribe",
+            "subscribe.get_subscribes",
+            "subscribe",
+            "GET",
+            [],
+            table_subscricions.table_name,
+            None
+        )
+
+        get_subscribe_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table_subscricions.table_arn
+                ]
+            )
+        )
+
+        unsubscribe_lambda = create_lambda_function(
+            "unsubscribe",
+            "unsubscribe",
+            "unsubscribe.lambda_handler",
+            "unsubscribe",
+            "DELETE",
+            [],
+            table_subscricions.table_name,
+            None
+        )
+
+        # Dodajte dozvole za pristup DynamoDB tabeli
+        unsubscribe_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table_subscricions.table_arn
+                ]
+            )
+        )
+
+        delete_movie_lambda = create_lambda_function(
+            "deleteMovie",
+            "deleteMovie",
+            "deleteMovie.lambda_handler",
+            "deleteMovie",
+            "DELETE",
+            [],
+            table.table_name,
+            None
+        )
+
+        # Dodajte dozvole za pristup DynamoDB tabeli
+        delete_movie_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table.table_arn
+                ]
+            )
+        )
+
         get_feed_lambda = create_lambda_function(
             "getFeed",
             "getFeed",
@@ -683,6 +772,7 @@ class CloudBackStack(Stack):
         table.grant_read_data(download_record_lambda)
         table.grant_read_data(add_review_lambda)
         table.grant_read_data(search_lambda)
+        table.grant_read_data(delete_movie_lambda)
         table_subscricions.add_global_secondary_index(
             index_name='subscriber-index4',
             partition_key={'name': 'subscriber_email', 'type': dynamodb.AttributeType.STRING}
@@ -692,6 +782,8 @@ class CloudBackStack(Stack):
         #     partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
         # )
         table_subscricions.grant_read_write_data(subscribe_lambda)
+        table_subscricions.grant_read_write_data(get_subscribe_lambda)
+        table_subscricions.grant_read_write_data(unsubscribe_lambda)
 
         table_review.add_global_secondary_index(
             index_name='review-index-review',
@@ -716,6 +808,8 @@ class CloudBackStack(Stack):
         bucket.grant_read_write(put_interaction_lambda)
         bucket.grant_read_write(get_feed_lambda)
         bucket.grant_read_write(user_to_usergroup_lambda)
+        bucket.grant_read_write(get_subscribe_lambda)
+        bucket.grant_read_write(unsubscribe_lambda)
 
         self.api = apigateway.RestApi(self, "CloudProjectTeam14",
                                       rest_api_name="CloudProject2023",
@@ -756,6 +850,20 @@ class CloudBackStack(Stack):
         )
 
         subscribe_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        get_subscribe_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        unsubscribe_lambda.add_permission(
             "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
@@ -834,6 +942,12 @@ class CloudBackStack(Stack):
                     table.table_arn
                 ]
             )
+        )
+        delete_movie_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
         # AUTORIZACIJA GLUPAVA
@@ -925,15 +1039,15 @@ class CloudBackStack(Stack):
             )
         )
 
-        authorizer_admin = apigateway.TokenAuthorizer(
-            self, "AdminAuthorizer",
-            handler=authorization_admin_lambda_function
-        )
-
-        authorizer_user = apigateway.TokenAuthorizer(
-            self, "UserAuthorizer",
-            handler=authorization_user_lambda_function
-        )
+        # authorizer_admin = apigateway.TokenAuthorizer(
+        #     self, "AdminAuthorizer",
+        #     handler=authorization_admin_lambda_function
+        # )
+        #
+        # authorizer_user = apigateway.TokenAuthorizer(
+        #     self, "UserAuthorizer",
+        #     handler=authorization_user_lambda_function
+        # )
 
         movie_resource = self.api.root.add_resource("movieNew")
 
@@ -945,7 +1059,7 @@ class CloudBackStack(Stack):
         # POST metoda za /movie
         movie_resource = self.api.root.add_resource("movie")
         movie_resource.add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role,
-                                                                       proxy=True), authorizer=authorizer_admin)
+                                                                       proxy=True))
 
         # POST metoda za /movieS3
         self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_data,
@@ -968,7 +1082,24 @@ class CloudBackStack(Stack):
         subsribe_resource = self.api.root.add_resource("subscribe")
         subsribe_resource.add_method("POST",
                                      apigateway.LambdaIntegration(subscribe_lambda, credentials_role=api_gateway_role,
-                                                                  proxy=True), authorizer=authorizer_user)
+                                                                  proxy=True))
+
+        get_subscribe_resource = self.api.root.add_resource("getSubscribe")
+        username_resource = get_subscribe_resource.add_resource("{username}")
+        username_resource.add_method("GET",
+                                      apigateway.LambdaIntegration(get_subscribe_lambda, credentials_role=api_gateway_role,proxy=True))
+
+        unsubscribe_resource = self.api.root.add_resource("unsubscribe")
+        unsub_resource = unsubscribe_resource.add_resource("{subscription_id}")
+        unsub_resource.add_method("DELETE",
+                                     apigateway.LambdaIntegration(unsubscribe_lambda,
+                                                                  credentials_role=api_gateway_role, proxy=True))
+
+        delete_movie_resource = self.api.root.add_resource("deleteMovie")
+        delete_resource = delete_movie_resource.add_resource("{movie_id}")
+        delete_resource.add_method("DELETE",
+                                  apigateway.LambdaIntegration(delete_movie_lambda,
+                                                               credentials_role=api_gateway_role, proxy=True))
 
         add_user_to_group_resource = self.api.root.add_resource("toGroup")
         add_user_to_group_resource.add_method("POST",

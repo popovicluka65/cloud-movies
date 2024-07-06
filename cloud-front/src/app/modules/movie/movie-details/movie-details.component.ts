@@ -132,7 +132,15 @@ export class MovieDetailsComponent implements OnInit {
   }
 
   delete() {
-
+    this.movieService.deleteMovie(this.movieId).subscribe(
+      () => {
+        console.log(`Deleted movie.`);
+        this.router.navigate(['/home']);
+      },
+      error => {
+        console.error('Error deleting movie', error);
+      }
+    );
   }
   rateContent(): void {
     // Implementacija funkcije za ocenjivanje sadržaja
