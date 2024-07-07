@@ -1134,12 +1134,6 @@ class CloudBackStack(Stack):
                                                            proxy=True))
 
         search = self.api.root.add_resource("search")
-        search.add_method("GET",
-                          apigateway.LambdaIntegration(search_lambda,
-                                                       credentials_role=api_gateway_role,
-                                                       proxy=True))
-
-        search = self.api.root.add_resource("search")
         search.add_method("POST",
                               apigateway.LambdaIntegration(search_lambda,
                                                            credentials_role=api_gateway_role,
