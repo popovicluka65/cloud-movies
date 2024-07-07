@@ -1,6 +1,7 @@
 import json
 import boto3
 import uuid
+from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 dynamodb = boto3.resource('dynamodb')
@@ -14,7 +15,6 @@ headers = {
     'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
     'Access-Control-Allow-Headers': 'Content-Type,Authorization'
 }
-
 def lambda_handler(event, context):
     try:
         print("Received event:", json.dumps(event))
@@ -79,41 +79,28 @@ def lambda_handler(event, context):
             'body': json.dumps({'message': str(e)})
         }
 
-
+#proveriti ovo posle deploy kad zavrse ovi
 def get_subscribes(event, context):
     try:
-        print("Received event:", json.dumps(event))
-        body = json.loads(event['body'])
-        username = body['username']
-        response = table.scan()
+        # Uzimanje staze (path) iz event objekta
+        path = event['path']
+        path_parts = path.split('/')
+        username = path_parts[-1]
+        print(username)
+        response = table.scan(
+            FilterExpression=Attr('subscriber').eq(username)
+        )
+        items = response.get('Items', [])
 
-        items = response['Items']
-        for item in items:
-            print(item)
-
-        body_response = {
-            'message': 'Successful get subscribe',
-            'items': items # Dodajte stavke iz DynamoDB tabele u odgovor
-        }
-
-        # Vraćanje HTTP odgovora
         return {
             'headers': headers,
             'statusCode': 200,
-            'body': json.dumps(body_response)
+            'body': json.dumps({
+                'message': 'Successful get subscriptons, '+username,
+                'data': items
+            })
         }
-    except NoCredentialsError:
-        return {
-            'headers': headers,
-            'statusCode': 500,
-            'body': json.dumps({'message': 'Credentials not available'})
-        }
-    except PartialCredentialsError:
-        return {
-            'headers': headers,
-            'statusCode': 500,
-            'body': json.dumps({'message': 'Incomplete credentials provided'})
-        }
+
     except Exception as e:
         return {
             'headers': headers,

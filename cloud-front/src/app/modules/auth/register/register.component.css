@@ -65,3 +65,24 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+
+#birthdate-container {
+  margin-bottom: 20px; /* Razmak između polja i ostalih elemenata */
+  width: 50%;
+  margin-left:25%;
+}
+
+#birthdate-label {
+  display: block; /* Da labela zauzme cijeli red */
+  margin-bottom: 5px; /* Razmak između labela i input polja */
+  font-weight: bold; /* Debljina fonta */
+}
+
+#birthdate-input {
+  padding: 8px; /* Unutrašnji padding input polja */
+  font-size: 16px; /* Veličina fonta */
+  border: 1px solid #ccc; /* Okvir input polja */
+  border-radius: 4px; /* Zaobljeni rubovi */
+  width: 100%; /* Širina input polja */
+  box-sizing: border-box; /* Uključuje padding i border u širinu */
+}

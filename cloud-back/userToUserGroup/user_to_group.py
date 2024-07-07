@@ -21,20 +21,6 @@ def lambda_handler(event, context):
         body = json.loads(event['body'])
         username = body['username']
         permanent_password = body['password']
-        user_attributes = [
-            {
-                'Name': 'email',
-                'Value': username
-            },
-            {
-                'Name': 'given_name',
-                'Value': 'John'
-            },
-            {
-                'Name': 'family_name',
-                'Value': 'Doe'
-            }
-        ]
 
         # # Create a new user
         # response = client.admin_create_user(

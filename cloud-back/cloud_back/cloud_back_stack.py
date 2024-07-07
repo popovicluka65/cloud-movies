@@ -15,8 +15,9 @@ from aws_cdk import (
     custom_resources as cr
 )
 
-#import aws_cdk as core
+# import aws_cdk as core
 from constructs import Construct
+
 
 class CloudBackStack(Stack):
 
@@ -78,7 +79,6 @@ class CloudBackStack(Stack):
         # # Dodajemo politiku na S3 kantu
         # bucket.add_to_resource_policy(bucket_policy_statement)
 
-
         table = dynamodb.Table(
             self, 'MoviesTable100',
             table_name='MoviesTable100',
@@ -138,6 +138,7 @@ class CloudBackStack(Stack):
                 require_symbols=False
 
             ),
+            #AKO HOCEMO DA username mora @gmail.com otkomentarisati ovo
             sign_in_aliases=cognito.SignInAliases(email=True),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
             standard_attributes=cognito.StandardAttributes(
@@ -185,25 +186,24 @@ class CloudBackStack(Stack):
             description="Regular user group"
         )
 
-
         # Kreiranje SNS teme
         topic = sns.Topic(self, "MovieTopic",
                           display_name="MovieTopic",
                           topic_name="MovieTopic")
 
         actions_sns = [
-             "sns:Publish",
-              "sns:Subscribe"
+            "sns:Publish",
+            "sns:Subscribe"
         ]
 
         topic.add_to_resource_policy(
-             statement=iam.PolicyStatement(
-                 effect=iam.Effect.ALLOW,
-                 actions=actions_sns,
-                 principals=[iam.ServicePrincipal("lambda.amazonaws.com")],
-                 resources=[topic.topic_arn]
-             )
-             )
+            statement=iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=actions_sns,
+                principals=[iam.ServicePrincipal("lambda.amazonaws.com")],
+                resources=[topic.topic_arn]
+            )
+        )
 
         lambda_role = iam.Role(
             self, "LambdaRole",
@@ -251,16 +251,17 @@ class CloudBackStack(Stack):
                 ]
             )
         )
-        def create_lambda_function(id,name, handler, include_dir, method, layers, database_dynamo,database_s3):
-            env='TABLE_NAME'
+
+        def create_lambda_function(id, name, handler, include_dir, method, layers, database_dynamo, database_s3):
+            env = 'TABLE_NAME'
             if database_dynamo is not None:
-                database=database_dynamo
+                database = database_dynamo
             else:
                 if database_dynamo is None and database_s3 is None:
-                    database=""
+                    database = ""
                 else:
-                    env='BUCKET_NAME'
-                    database=database_s3
+                    env = 'BUCKET_NAME'
+                    database = database_s3
             function = _lambda.Function(
                 self, id,
                 function_name=name,
@@ -402,7 +403,6 @@ class CloudBackStack(Stack):
             None
         )
 
-
         download_movie_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 actions=[
@@ -439,6 +439,95 @@ class CloudBackStack(Stack):
                 ],
                 resources=[
                     table_subscricions.table_arn
+                ]
+            )
+        )
+
+        get_subscribe_lambda = create_lambda_function(
+            "getSubscribe",
+            "getSubscribe",
+            "subscribe.get_subscribes",
+            "subscribe",
+            "GET",
+            [],
+            table_subscricions.table_name,
+            None
+        )
+
+        get_subscribe_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table_subscricions.table_arn
+                ]
+            )
+        )
+
+        unsubscribe_lambda = create_lambda_function(
+            "unsubscribe",
+            "unsubscribe",
+            "unsubscribe.lambda_handler",
+            "unsubscribe",
+            "DELETE",
+            [],
+            table_subscricions.table_name,
+            None
+        )
+
+        # Dodajte dozvole za pristup DynamoDB tabeli
+        unsubscribe_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table_subscricions.table_arn
+                ]
+            )
+        )
+
+        delete_movie_lambda = create_lambda_function(
+            "deleteMovie",
+            "deleteMovie",
+            "deleteMovie.lambda_handler",
+            "deleteMovie",
+            "DELETE",
+            [],
+            table.table_name,
+            None
+        )
+
+        # Dodajte dozvole za pristup DynamoDB tabeli
+        delete_movie_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table.table_arn
                 ]
             )
         )
@@ -502,7 +591,6 @@ class CloudBackStack(Stack):
                 ]
             )
         )
-
 
         # UPLOAD S3 AND DYNAMO DB---------------------------------------------------
 
@@ -611,7 +699,6 @@ class CloudBackStack(Stack):
             )
         )
 
-
         # Lambda funkcije
         first_lambda = lambda_.Function(
             self, "FirstLambda",
@@ -670,7 +757,6 @@ class CloudBackStack(Stack):
                                     assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com"),
                                     description="Role for API Gateway to invoke lambda functions")
 
-
         # Dodaj potrebne permisije roli
         api_gateway_role.add_to_policy(iam.PolicyStatement(
             actions=["lambda:InvokeFunction"],
@@ -686,6 +772,7 @@ class CloudBackStack(Stack):
         table.grant_read_data(download_record_lambda)
         table.grant_read_data(add_review_lambda)
         table.grant_read_data(search_lambda)
+        table.grant_read_data(delete_movie_lambda)
         table_subscricions.add_global_secondary_index(
             index_name='subscriber-index4',
             partition_key={'name': 'subscriber_email', 'type': dynamodb.AttributeType.STRING}
@@ -695,11 +782,13 @@ class CloudBackStack(Stack):
         #     partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
         # )
         table_subscricions.grant_read_write_data(subscribe_lambda)
+        table_subscricions.grant_read_write_data(get_subscribe_lambda)
+        table_subscricions.grant_read_write_data(unsubscribe_lambda)
 
         table_review.add_global_secondary_index(
             index_name='review-index-review',
             partition_key={'name': 'user_id', 'type': dynamodb.AttributeType.STRING},
-            #sort_key={'name': 'rate', 'type': dynamodb.AttributeType.STRING}  # Dodavanje sort key-a
+            # sort_key={'name': 'rate', 'type': dynamodb.AttributeType.STRING}  # Dodavanje sort key-a
         )
         table_subscricions.grant_read_write_data(put_interaction_lambda)
         table_subscricions.grant_read_write_data(user_to_usergroup_lambda)
@@ -710,27 +799,27 @@ class CloudBackStack(Stack):
         table.add_global_secondary_index(
             index_name='AllAttributesIndex10',
             partition_key={'name': 'all_attributes', 'type': dynamodb.AttributeType.STRING},
-            #sort_key={'name': 'movie_id', 'type': dynamodb.AttributeType.STRING},
+            # sort_key={'name': 'movie_id', 'type': dynamodb.AttributeType.STRING},
             projection_type=dynamodb.ProjectionType.ALL
         )
-
 
         bucket.grant_read_write(download_movie_lambda)
         bucket.grant_read_write(subscribe_lambda)
         bucket.grant_read_write(put_interaction_lambda)
         bucket.grant_read_write(get_feed_lambda)
         bucket.grant_read_write(user_to_usergroup_lambda)
+        bucket.grant_read_write(get_subscribe_lambda)
+        bucket.grant_read_write(unsubscribe_lambda)
 
         self.api = apigateway.RestApi(self, "CloudProjectTeam14",
-                                 rest_api_name="CloudProject2023",
-                                 description="This service serves movie contents.",
-                                 endpoint_types=[apigateway.EndpointType.REGIONAL],
-                                 default_cors_preflight_options={
-                                     "allow_origins": apigateway.Cors.ALL_ORIGINS,
-                                     "allow_methods": apigateway.Cors.ALL_METHODS
-                                 },
-
-                               )
+                                      rest_api_name="CloudProject2023",
+                                      description="This service serves movie contents.",
+                                      endpoint_types=[apigateway.EndpointType.REGIONAL],
+                                      default_cors_preflight_options={
+                                          "allow_origins": apigateway.Cors.ALL_ORIGINS,
+                                          "allow_methods": apigateway.Cors.ALL_METHODS
+                                      }
+                                      )
 
         get_movie_lambda.add_permission(
             "ApiGatewayInvokePermission",
@@ -753,7 +842,6 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
-
         upload_data.add_permission(
             "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
@@ -762,6 +850,20 @@ class CloudBackStack(Stack):
         )
 
         subscribe_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        get_subscribe_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        unsubscribe_lambda.add_permission(
             "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
@@ -796,16 +898,15 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
-
         user_to_usergroup_lambda.add_permission(
-          "ApiGatewayInvokePermission",
+            "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
         edit_data.add_permission(
-          "ApiGatewayInvokePermission",
+            "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             source_arn=self.api.arn_for_execute_api("/*/*/*")
@@ -842,19 +943,128 @@ class CloudBackStack(Stack):
                 ]
             )
         )
+        delete_movie_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        # AUTORIZACIJA GLUPAVA
+        # npr user ima pravo na subscribe a admin na upload pa to moramo srediti
+        #DODAO SAM ZA USERA SUBSCRIBE DA MOZE ADMIN NE
+        #ADMIN MOZE UPLOAD USER NE
+
+        authorization_user_lambda_function = create_lambda_function(
+            "authorization_user",
+            "AuthorizationFunctionUser",
+            "authorization.user_permission_handler",
+            "authorization",
+            "POST",
+            [],
+            table.table_name,
+            None
+        )
+
+        authorization_admin_lambda_function = create_lambda_function(
+            "authorization_admin",
+            "AuthorizationFunctionAdmin",
+            "authorization.admin_permission_handler",
+            "authorization",
+            "POST",
+            [],
+            table.table_name,
+            None
+        )
+
+        authorization_admin_lambda_function.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["iam:GetRolePolicy",
+                         "dynamodb:GetItem",
+                         "dynamodb:Query",
+                         "dynamodb:Scan",
+                         "s3:GetObject",
+                         "s3:ListBucket",
+                         "cognito-idp:AdminCreateUser",
+                         "cognito-idp:AdminInitiateAuth",
+                         "cognito-idp:AdminRespondToAuthChallenge",
+                         "cognito-idp:InitiateAuth",
+                         "cognito-idp:RespondToAuthChallenge",
+                         "cognito-idp:AdminGetUser",
+                         "cognito-idp:GlobalSignOut",
+                         "cognito-idp:AdminAddUserToGroup",
+                         "cognito-idp:AdminListGroupsForUser",
+                         "iam:ListAttachedRolePolicies",
+                         "iam:ListRolePolicies",
+                         "iam:GetRolePolicy",
+                         "sns:Subscribe",
+                         "sns:ListSubscriptionsByTopic"
+                         ],
+                resources=[table.table_arn,
+                           user_pool.user_pool_arn,
+                           f"arn:aws:cognito-idp:{self.region}:{self.account}:userpool/{user_pool.user_pool_id}",
+                           ]
+            )
+        )
+
+        authorization_user_lambda_function.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["iam:GetRolePolicy",
+                         "dynamodb:GetItem",
+                         "dynamodb:Query",
+                         "dynamodb:Scan",
+                         "s3:GetObject",
+                         "s3:ListBucket",
+                         "cognito-idp:AdminCreateUser",
+                         "cognito-idp:AdminInitiateAuth",
+                         "cognito-idp:AdminRespondToAuthChallenge",
+                         "cognito-idp:InitiateAuth",
+                         "cognito-idp:RespondToAuthChallenge",
+                         "cognito-idp:AdminGetUser",
+                         "cognito-idp:GlobalSignOut",
+                         "cognito-idp:AdminAddUserToGroup",
+                         "cognito-idp:AdminListGroupsForUser",
+                         "iam:ListAttachedRolePolicies",
+                         "iam:ListRolePolicies",
+                         "iam:GetRolePolicy",
+                         "sns:Subscribe",
+                         "sns:ListSubscriptionsByTopic"
+                         ],
+                resources=[table.table_arn,
+                           user_pool.user_pool_arn,
+                           f"arn:aws:cognito-idp:{self.region}:{self.account}:userpool/{user_pool.user_pool_id}",
+                           ]
+            )
+        )
+
+        # authorizer_admin = apigateway.TokenAuthorizer(
+        #     self, "AdminAuthorizer",
+        #     handler=authorization_admin_lambda_function
+        # )
+        #
+        # authorizer_user = apigateway.TokenAuthorizer(
+        #     self, "UserAuthorizer",
+        #     handler=authorization_user_lambda_function
+        # )
 
         movie_resource = self.api.root.add_resource("movieNew")
 
         # GET metoda za /movies123
-        get_movies_integration = apigateway.LambdaIntegration(get_movie_lambda, credentials_role=api_gateway_role, proxy=True)
+        get_movies_integration = apigateway.LambdaIntegration(get_movie_lambda, credentials_role=api_gateway_role,
+                                                              proxy=True)
         self.api.root.add_resource("movies123").add_method("GET", get_movies_integration)
 
         # POST metoda za /movie
         movie_resource = self.api.root.add_resource("movie")
-        movie_resource.add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
+        movie_resource.add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role,
+                                                                       proxy=True))
 
         # POST metoda za /movieS3
-        self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_data, credentials_role=api_gateway_role, proxy=True))
+        self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_data,
+                                                                                              credentials_role=api_gateway_role,
+                                                                                              proxy=True))
 
         # GET metoda za /movie/{movieId}
         movie_resource_with_id = movie_resource.add_resource("{movieName}")
@@ -869,23 +1079,39 @@ class CloudBackStack(Stack):
                                                                                             credentials_role=api_gateway_role,
                                                                                             proxy=True))
 
-
-
         subsribe_resource = self.api.root.add_resource("subscribe")
         subsribe_resource.add_method("POST",
-                                   apigateway.LambdaIntegration(subscribe_lambda, credentials_role=api_gateway_role,
-                                                                proxy=True))
+                                     apigateway.LambdaIntegration(subscribe_lambda, credentials_role=api_gateway_role,
+                                                                  proxy=True))
+
+        get_subscribe_resource = self.api.root.add_resource("getSubscribe")
+        username_resource = get_subscribe_resource.add_resource("{username}")
+        username_resource.add_method("GET",
+                                      apigateway.LambdaIntegration(get_subscribe_lambda, credentials_role=api_gateway_role,proxy=True))
+
+        unsubscribe_resource = self.api.root.add_resource("unsubscribe")
+        unsub_resource = unsubscribe_resource.add_resource("{subscription_id}")
+        unsub_resource.add_method("DELETE",
+                                     apigateway.LambdaIntegration(unsubscribe_lambda,
+                                                                  credentials_role=api_gateway_role, proxy=True))
+
+        delete_movie_resource = self.api.root.add_resource("deleteMovie")
+        delete_resource = delete_movie_resource.add_resource("{movie_id}")
+        delete_resource.add_method("DELETE",
+                                  apigateway.LambdaIntegration(delete_movie_lambda,
+                                                               credentials_role=api_gateway_role, proxy=True))
 
         add_user_to_group_resource = self.api.root.add_resource("toGroup")
         add_user_to_group_resource.add_method("POST",
-                                     apigateway.LambdaIntegration(user_to_usergroup_lambda, credentials_role=api_gateway_role,
-                                                                  proxy=True))
-
+                                              apigateway.LambdaIntegration(user_to_usergroup_lambda,
+                                                                           credentials_role=api_gateway_role,
+                                                                           proxy=True))
 
         interaction_resource = self.api.root.add_resource("interaction")
         interaction_resource.add_method("PUT",
-                                     apigateway.LambdaIntegration(put_interaction_lambda, credentials_role=api_gateway_role,
-                                                                  proxy=True))
+                                        apigateway.LambdaIntegration(put_interaction_lambda,
+                                                                     credentials_role=api_gateway_role,
+                                                                     proxy=True))
 
         new_rute = self.api.root.add_resource("getFromS3")
         new_rute_id = new_rute.add_resource("{id}")
@@ -897,14 +1123,21 @@ class CloudBackStack(Stack):
 
         download_record = self.api.root.add_resource("downloadRecordUser")
         download_record.add_method("POST",
-                                     apigateway.LambdaIntegration(download_record_lambda, credentials_role=api_gateway_role,
-                                                                  proxy=True))
+                                   apigateway.LambdaIntegration(download_record_lambda,
+                                                                credentials_role=api_gateway_role,
+                                                                proxy=True))
 
         add_review = self.api.root.add_resource("addReviewFunction")
         add_review.add_method("POST",
-                                   apigateway.LambdaIntegration(add_review_lambda,
-                                                                credentials_role=api_gateway_role,
-                                                                proxy=True))
+                              apigateway.LambdaIntegration(add_review_lambda,
+                                                           credentials_role=api_gateway_role,
+                                                           proxy=True))
+
+        search = self.api.root.add_resource("search")
+        search.add_method("GET",
+                          apigateway.LambdaIntegration(search_lambda,
+                                                       credentials_role=api_gateway_role,
+                                                       proxy=True))
 
         search = self.api.root.add_resource("search")
         search.add_method("POST",
@@ -918,11 +1151,9 @@ class CloudBackStack(Stack):
                                                        credentials_role=api_gateway_role,
                                                        proxy=True))
 
-
         self.api.root.add_resource("putMovie").add_method("PUT", apigateway.LambdaIntegration(edit_data,
                                                                                               credentials_role=api_gateway_role,
                                                                                               proxy=True))
-
 
         # deployment nakon dodavanja svih resursa i metoda
         api_deployment_new = apigateway.Deployment(self, "ApiDeploymentTotalNew",

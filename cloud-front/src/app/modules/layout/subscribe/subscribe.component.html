@@ -12,16 +12,18 @@
 <table *ngIf="searchResults && searchResults.length > 0" class="search-results-table">
   <thead>
   <tr>
-    <th>Type</th>
+    <!--POPUNTI POSLE -->
+    <th></th>
     <th>Content Creator</th>
     <!-- Dodajte ostale kolone ovdje po potrebi -->
   </tr>
   </thead>
   <tbody>
   <tr *ngFor="let result of searchResults">
+    <td>{{ result.subscription_id}}</td>
     <td>{{ result.type }}</td>
-    <td>{{ result.contentCreator }}</td>
-   <td><button *ngIf="searchResults && searchResults.length > 0" class="delete-button" (click)="clearResults()">Unsubscribe</button></td>
+    <td>{{ result.content_creator }}</td>
+   <td><button *ngIf="searchResults && searchResults.length > 0" class="delete-button" (click)="clearResults(result.subscription_id)">Unsubscribe</button></td>
   </tr>
   </tbody>
 

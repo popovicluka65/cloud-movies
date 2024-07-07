@@ -38,6 +38,9 @@ export class RegisterComponent implements OnInit {
   registerUsername: string = "";
   registerPassword: string = "";
   registerEmail: string = "";
+  registerGivenName: string = "";
+  registerFamilyName: string = "";
+  registerBirthdate: string = "";
 
   private userPoolData = {
     UserPoolId: environment.userPoolId, // Zameni sa svojim User Pool ID
@@ -60,17 +63,22 @@ export class RegisterComponent implements OnInit {
     };
     const givenNameAttribute = {
       Name: 'given_name',
-      Value: 'John'
+      Value: this.registerGivenName
     };
     const familyNameAttribute = {
       Name: 'family_name',
-      Value: 'Doe'
+      Value: this.registerFamilyName
+    };
+    const birthdateAttribute = {
+      Name: 'birthdate',
+      Value: this.registerBirthdate
     };
 
     const attributeList: CognitoUserAttribute[] = [];
     attributeList.push(new CognitoUserAttribute(emailAttribute));
     attributeList.push(new CognitoUserAttribute(givenNameAttribute));
     attributeList.push(new CognitoUserAttribute(familyNameAttribute));
+    attributeList.push(new CognitoUserAttribute(birthdateAttribute));
 
     this.userPool.signUp(this.registerUsername, this.registerPassword,attributeList, [], (err, result) => {
       if (err) {
@@ -79,7 +87,7 @@ export class RegisterComponent implements OnInit {
       }
       console.log('Registration successful:', result);
       this.addUserToGroup(this.registerUsername,this.registerPassword);
-      this.router.navigate(['/verify-email']); // Zameni sa putanjom na koju želiš da preusmeriš korisnika nakon registracije
+      this.router.navigate(['/verify-email/'+this.registerUsername]); // Zameni sa putanjom na koju želiš da preusmeriš korisnika nakon registracije
     });
   }
 

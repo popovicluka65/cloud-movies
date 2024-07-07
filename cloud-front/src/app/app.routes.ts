@@ -15,7 +15,7 @@ export const routes: Routes = [
   {path : 'home', component : MovieCardsComponent},
   { path : 'login', component : LoginComponent},
   { path  : 'register', component : RegisterComponent},
-  {path  : 'verify-email', component :  ConfirmEmailComponent},
+  {path  : 'verify-email/:username', component :  ConfirmEmailComponent},
   {path : "home/:movieId", component:MovieDetailsComponent},
   {path  : 'upload', component : UploadMovieComponent},
   {path  : 'subscribe', component : SubscribeComponent },

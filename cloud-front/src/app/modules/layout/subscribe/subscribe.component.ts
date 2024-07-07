@@ -24,11 +24,15 @@ export class SubscribeComponent {
   searchResults: any[] = [];
 
   constructor(private movieService:MovieService,private authService:AuthService) {
-    this.searchResults = [
-      { type: 'Type 1', contentCreator: 'Creator 1' },
-      { type: 'Type 2', contentCreator: 'Creator 2' },
-      { type: 'Type 3', contentCreator: 'Creator 3' }
-    ];
+    this.movieService.getSubscribeByUser(this.authService.getUsername()).subscribe(
+      data => {
+        console.log(data.data)
+        this.searchResults = data.data;
+      },
+      error => {
+        console.error('Error fetching subscriptions', error);
+      }
+    );
   }
   performSearch() {
     console.log(`Searching for ${this.searchQuery} by ${this.selectedCriteria}`);
@@ -50,7 +54,17 @@ export class SubscribeComponent {
       );
   }
 
-  clearResults() {
-
+  clearResults(id:string) {
+    console.log(this.authService.getUsername())
+    this.movieService.deleteSubscribe(id,this.authService.getUsername()).subscribe(
+      () => {
+        console.log(`Subscription with ID ${id} deleted successfully.`);
+        // Ažuriraj listu pretplata
+        //this.loadSubscriptions();
+      },
+      error => {
+        console.error('Error deleting subscription', error);
+      }
+    );
   }
 }

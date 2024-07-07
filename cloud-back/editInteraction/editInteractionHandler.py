@@ -219,7 +219,7 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
 
         table_interacions.put_item(Item=item)
 
-        for key, value in sorted_movies_values.items():
+        for key, value in interaction_movies_values.items():
             feed_movies_values.append(key)
 
         item1 = {

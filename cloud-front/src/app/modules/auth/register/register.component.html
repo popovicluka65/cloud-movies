@@ -15,6 +15,18 @@
       <label for="email">Email</label>
       <input type="email" id="email" [(ngModel)]="registerEmail" name="email" required>
     </div>
+    <div>
+      <label for="givenName">First Name</label>
+      <input type="text" id="givenName" [(ngModel)]="registerGivenName" name="givenName" required>
+    </div>
+    <div>
+      <label for="familyName">Last Name</label>
+      <input type="text" id="familyName" [(ngModel)]="registerFamilyName" name="familyName" required>
+    </div>
+    <label for="birthdate" id="birthdate-label">Date of Birth</label>
+    <div id="birthdate-container">
+      <input type="date" id="birthdate" [(ngModel)]="registerBirthdate" name="birthdate" required class="form-control" id="birthdate-input">
+    </div>
     <button type="submit">Register</button>
   </form>
 </div>
