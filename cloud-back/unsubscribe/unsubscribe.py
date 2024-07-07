@@ -17,8 +17,10 @@ def lambda_handler(event, context):
     try:
         path = event['path']
         path_parts = path.split('/')
-        partition_key = path_parts[-2]
-        subscriber = path_parts[-1]
+        ids = path_parts[-1]
+        ids_parts = ids.split('++++')
+        partition_key = ids_parts[-2]
+        subscriber = ids_parts[-1]
         response_delete = table.delete_item(
                 Key={
                     'subscription_id': partition_key,

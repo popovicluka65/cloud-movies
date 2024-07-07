@@ -138,7 +138,7 @@ class CloudBackStack(Stack):
                 require_symbols=False
 
             ),
-            #AKO HOCEMO DA username mora @gmail.com otkomentarisati ovo
+            # AKO HOCEMO DA username mora @gmail.com otkomentarisati ovo
             sign_in_aliases=cognito.SignInAliases(email=True),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
             standard_attributes=cognito.StandardAttributes(
@@ -952,8 +952,8 @@ class CloudBackStack(Stack):
 
         # AUTORIZACIJA GLUPAVA
         # npr user ima pravo na subscribe a admin na upload pa to moramo srediti
-        #DODAO SAM ZA USERA SUBSCRIBE DA MOZE ADMIN NE
-        #ADMIN MOZE UPLOAD USER NE
+        # DODAO SAM ZA USERA SUBSCRIBE DA MOZE ADMIN NE
+        # ADMIN MOZE UPLOAD USER NE
 
         authorization_user_lambda_function = create_lambda_function(
             "authorization_user",
@@ -1087,19 +1087,20 @@ class CloudBackStack(Stack):
         get_subscribe_resource = self.api.root.add_resource("getSubscribe")
         username_resource = get_subscribe_resource.add_resource("{username}")
         username_resource.add_method("GET",
-                                      apigateway.LambdaIntegration(get_subscribe_lambda, credentials_role=api_gateway_role,proxy=True))
+                                     apigateway.LambdaIntegration(get_subscribe_lambda,
+                                                                  credentials_role=api_gateway_role, proxy=True))
 
         unsubscribe_resource = self.api.root.add_resource("unsubscribe")
         unsub_resource = unsubscribe_resource.add_resource("{subscription_id}")
-        unsub_resource.add_method("DELETE",
-                                     apigateway.LambdaIntegration(unsubscribe_lambda,
-                                                                  credentials_role=api_gateway_role, proxy=True))
+        unsub_resource.add_method(
+            "DELETE",
+            apigateway.LambdaIntegration(unsubscribe_lambda, credentials_role=api_gateway_role, proxy=True))
 
         delete_movie_resource = self.api.root.add_resource("deleteMovie")
         delete_resource = delete_movie_resource.add_resource("{movie_id}")
         delete_resource.add_method("DELETE",
-                                  apigateway.LambdaIntegration(delete_movie_lambda,
-                                                               credentials_role=api_gateway_role, proxy=True))
+                                   apigateway.LambdaIntegration(delete_movie_lambda,
+                                                                credentials_role=api_gateway_role, proxy=True))
 
         add_user_to_group_resource = self.api.root.add_resource("toGroup")
         add_user_to_group_resource.add_method("POST",
@@ -1135,15 +1136,15 @@ class CloudBackStack(Stack):
 
         search = self.api.root.add_resource("search")
         search.add_method("POST",
-                              apigateway.LambdaIntegration(search_lambda,
-                                                           credentials_role=api_gateway_role,
-                                                           proxy=True))
+                          apigateway.LambdaIntegration(search_lambda,
+                                                       credentials_role=api_gateway_role,
+                                                       proxy=True))
 
         get_feed = self.api.root.add_resource("feed")
         get_feed.add_method("GET",
-                          apigateway.LambdaIntegration(get_feed_lambda,
-                                                       credentials_role=api_gateway_role,
-                                                       proxy=True))
+                            apigateway.LambdaIntegration(get_feed_lambda,
+                                                         credentials_role=api_gateway_role,
+                                                         proxy=True))
 
         self.api.root.add_resource("putMovie").add_method("PUT", apigateway.LambdaIntegration(edit_data,
                                                                                               credentials_role=api_gateway_role,
