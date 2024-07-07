@@ -51,7 +51,6 @@ export class ConfirmEmailComponent implements OnInit {
       this.username = params['username']; // Dobavljanje vrednosti parametra "username"
       console.log("Username:", this.username); // Možete dodati ovde konzolu da proverite da li se vrednost dobija
     });
-    //this.email="matijap59@gmail.com";
   }
 
   confirmRegistration() {

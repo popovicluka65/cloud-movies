@@ -85,16 +85,25 @@ export class RegisterComponent implements OnInit {
         console.error('Registration failed:', err);
         return;
       }
+
       console.log('Registration successful:', result);
-      this.addUserToGroup(this.registerUsername,this.registerPassword);
+      console.log(result?.userSub)
+      this.addUserToGroup(result?.userSub,this.registerPassword).subscribe(
+        response => {
+          console.log('User added to group:', response);
+        },
+        error => {
+          console.error('Failed to add user to group:', error);
+        }
+      );
       this.router.navigate(['/verify-email/'+this.registerUsername]); // Zameni sa putanjom na koju želiš da preusmeriš korisnika nakon registracije
     });
   }
 
-  addUserToGroup(username:string,password:string){
+  addUserToGroup(username: string | undefined, password: string){
     const data = {
       username:username,
-      password: password,
+      //password: password,
     };
     const url = environment.apiHost+"toGroup";
     console.log(url)

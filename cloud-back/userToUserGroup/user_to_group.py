@@ -16,33 +16,18 @@ headers = {
 
 def lambda_handler(event, context):
     body = json.loads(event['body'])
+    print(body)
     try:
         print("Received event:", json.dumps(event))
         body = json.loads(event['body'])
         username = body['username']
-        permanent_password = body['password']
-
-        # # Create a new user
-        # response = client.admin_create_user(
-        #      UserPoolId=user_pool_id,
-        #      Username=username,
-        #      UserAttributes=user_attributes,
-        #      MessageAction='SUPPRESS'
-        # )
-
-        # # Set the permanent password for the new user
-        response = client.admin_set_user_password(
-             UserPoolId=user_pool_id,
-             Username=username,
-             Password=permanent_password,
-             Permanent=True
-        )
-
+        print(username)
         response = client.admin_add_user_to_group(
              UserPoolId=user_pool_id,
              Username=username,
              GroupName='user'
         )
+
         return {
             'headers': headers,
             'statusCode': 200,
