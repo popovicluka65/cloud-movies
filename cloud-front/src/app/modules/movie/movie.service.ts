@@ -77,7 +77,7 @@ export class MovieService {
     return this.httpClient.post<string>(url, data, {responseType: 'json'});
   }
 
-  getFeed(username: string): Observable<any> {
+  getFeed(username: string | null): Observable<any> {
     const url = `${environment.apiHost}feed`;
     const body = {
       user_id: username
@@ -128,7 +128,7 @@ export class MovieService {
   }
 
   deleteSubscribe(id: string, username: string | null) {
-    const url = `${environment.apiHost}/unsubscribe/` + id+'/'+username;
+    const url = `${environment.apiHost}unsubscribe/` + id+'++++'+username;
     return this.httpClient.delete(url);
   }
 
