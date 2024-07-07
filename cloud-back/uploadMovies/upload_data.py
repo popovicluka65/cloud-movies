@@ -116,17 +116,49 @@ def upload_data_handler(event, context):
         }
 
 def send_notifications(title,director,actors,genres):
-    # subscriptions = dynamodb.Table(subscribe_table_name)
-    # for subscription in subscriptions:
-    #     if subscription['type'] == director or subscription['type'] in actors or subscription['type'] in genres:
-            try:
-                message = f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
+    subscriptions = dynamodb.Table(subscribe_table_name)
+    response = subscriptions.scan()
+    items = response.get('Items', [])
 
+    # Ispišite podatke
+    for item in items:
+        if item['type'] == director:
+            print("UDJE DIREKTOR")
+            try:
+                message = "Subscribe-vani ste se na " + item['type'] +".\n"
+                message += f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
 
                 response = sns.publish(
                     TopicArn=sns_topic_arn,
                     Message=message,
                     Subject='Novi film dostupan'
-                    )
+                )
+            except Exception as e:
+                print("Error publishing SNS message:", str(e))
+
+        if item['type'] in actors:
+            try:
+                message = "Subscribe-vani ste se na " + item['type'] +".\n"
+                message += f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
+
+                response = sns.publish(
+                    TopicArn=sns_topic_arn,
+                    Message=message,
+                    Subject='Novi film dostupan'
+                )
+            except Exception as e:
+                print("Error publishing SNS message:", str(e))
+
+        if item['type'] in genres:
+            print("UDJE GENRES")
+            try:
+                message = "Subscribe-vani ste se na " + item['type'] +".\n"
+                message += f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
+
+                response = sns.publish(
+                    TopicArn=sns_topic_arn,
+                    Message=message,
+                    Subject='Novi film dostupan'
+                )
             except Exception as e:
                 print("Error publishing SNS message:", str(e))

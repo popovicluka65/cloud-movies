@@ -42,13 +42,13 @@ def lambda_handler(event, context):
             Endpoint=subscriber_email,  # Email adresa ili broj telefona pretplatnika
         )
 
-        # Slanje obaveštenja putem SNS-a
-        message = f"Novi sadržaj je objavljen od strane {content_creator}. Pretplatnik: {subscriber}, Tip: {query}"
-        sns_response = sns_client.publish(
-            TopicArn=topic_arn,
-            Message=message,
-            Subject='Obaveštenje o novom sadržaju'
-        )
+        # # Slanje obaveštenja putem SNS-a
+        # message = f"Novi sadržaj je objavljen od strane {content_creator}. Pretplatnik: {subscriber}, Tip: {query}"
+        # sns_response = sns_client.publish(
+        #     TopicArn=topic_arn,
+        #     Message=message,
+        #     Subject='Obaveštenje o novom sadržaju'
+        # )
 
         return {
             'headers': headers,
@@ -56,7 +56,7 @@ def lambda_handler(event, context):
             'body': json.dumps({
                 'message': 'Successful subscription and notification sent',
                 'subscription_id': subscription_id,
-                'sns_message_id': sns_response['MessageId'],
+                #'sns_message_id': sns_response['MessageId'],
                 'sns_subscription_arn': sns_subscription_response['SubscriptionArn']
             })
         }
