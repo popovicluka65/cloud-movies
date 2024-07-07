@@ -6,15 +6,21 @@ from aws_cdk import (
     aws_dynamodb as dynamodb,
     aws_iam as iam, BundlingOptions, Duration,
     # aws_sqs as sqs,
-    aws_dynamodb as dynamodb,
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as tasks,
     aws_s3 as s3, aws_lambda_event_sources, RemovalPolicy,
     aws_cognito as cognito,
     aws_sns as sns,
-    custom_resources as cr
-)
+    custom_resources as cr,
+    aws_sqs as sqs,
+    aws_stepfunctions_tasks as sfn_tasks,
+    aws_lambda_event_sources as lambda_event_sources,
+    aws_dynamodb as dynamodb,
 
+)
+from aws_cdk.aws_lambda import LayerVersion
+import aws_cdk.aws_stepfunctions as sfn
+import aws_cdk.aws_s3_notifications as s3n
 # import aws_cdk as core
 from constructs import Construct
 
@@ -676,6 +682,19 @@ class CloudBackStack(Stack):
             None
         )
 
+        send_message_resolutions = create_lambda_function(
+            "sendMessageTranscode",
+            "sendMessageForTranscode",
+            "sendTranscodeMessage.send_transcode_message_handler",
+            "sendMessage",
+            "POST",
+            [],
+            None,
+            bucket.bucket_name
+        )
+
+        bucket.grant_read_write(send_message_resolutions)
+
         # Dodajte dozvole za pristup DynamoDB tabeli
         user_to_usergroup_lambda.add_to_role_policy(
             iam.PolicyStatement(
@@ -699,55 +718,55 @@ class CloudBackStack(Stack):
             )
         )
 
-        # Lambda funkcije
-        first_lambda = lambda_.Function(
-            self, "FirstLambda",
-            runtime=lambda_.Runtime.PYTHON_3_9,
-            handler="uploadS3handler.upload_S3_handler",
-            code=lambda_.Code.from_asset("s3Upload")
-        )
-
-        bucket.grant_read_write(first_lambda)
-
-        second_lambda = lambda_.Function(
-            self, "SecondLambda",
-            runtime=lambda_.Runtime.PYTHON_3_9,
-            handler="uploadDynamoHandler.upload_dynamo_handler",
-            code=lambda_.Code.from_asset("dynamoUpload"),
-            role=lambda_role
-        )
-
-        start_upload_data = lambda_.Function(
-            self, "StartUploadData",
-            runtime=lambda_.Runtime.PYTHON_3_9,
-            handler="startUploadMoviesHandler.upload_data_handler",
-            code=lambda_.Code.from_asset("startUploadMovies"),
-
-        )
-
-        # Definisanje Step Function-a
-        first_task = tasks.LambdaInvoke(
-            self, "First Task",
-            lambda_function=first_lambda,
-
-        )
-
-        second_task = tasks.LambdaInvoke(
-            self, "Second Task",
-            lambda_function=second_lambda
-        )
-
-        definition = second_task.next(first_task)
-
-        state_machine = sfn.StateMachine(
-            self, "StateMachine",
-            definition=definition
-        )
-
-        # Dodela dozvole Lambda funkciji da pokrene Step Function
-        state_machine.grant_start_execution(start_upload_data)
-        state_machine.grant_read(start_upload_data)
-        start_upload_data.add_environment('STATE_MACHINE_ARN', state_machine.state_machine_arn)
+        # # Lambda funkcije
+        # first_lambda = lambda_.Function(
+        #     self, "FirstLambda",
+        #     runtime=lambda_.Runtime.PYTHON_3_9,
+        #     handler="uploadS3handler.upload_S3_handler",
+        #     code=lambda_.Code.from_asset("s3Upload")
+        # )
+        #
+        # bucket.grant_read_write(first_lambda)
+        #
+        # second_lambda = lambda_.Function(
+        #     self, "SecondLambda",
+        #     runtime=lambda_.Runtime.PYTHON_3_9,
+        #     handler="uploadDynamoHandler.upload_dynamo_handler",
+        #     code=lambda_.Code.from_asset("dynamoUpload"),
+        #     role=lambda_role
+        # )
+        #
+        # start_upload_data = lambda_.Function(
+        #     self, "StartUploadData",
+        #     runtime=lambda_.Runtime.PYTHON_3_9,
+        #     handler="startUploadMoviesHandler.upload_data_handler",
+        #     code=lambda_.Code.from_asset("startUploadMovies"),
+        #
+        # )
+        #
+        # # Definisanje Step Function-a
+        # first_task = tasks.LambdaInvoke(
+        #     self, "First Task",
+        #     lambda_function=first_lambda,
+        #
+        # )
+        #
+        # second_task = tasks.LambdaInvoke(
+        #     self, "Second Task",
+        #     lambda_function=second_lambda
+        # )
+        #
+        # definition = second_task.next(first_task)
+        #
+        # state_machine = sfn.StateMachine(
+        #     self, "StateMachine",
+        #     definition=definition
+        # )
+        #
+        # # Dodela dozvole Lambda funkciji da pokrene Step Function
+        # state_machine.grant_start_execution(start_upload_data)
+        # state_machine.grant_read(start_upload_data)
+        # start_upload_data.add_environment('STATE_MACHINE_ARN', state_machine.state_machine_arn)
 
         # state_machine.grant_start_execution(start_upload_data)
 
@@ -762,6 +781,106 @@ class CloudBackStack(Stack):
             actions=["lambda:InvokeFunction"],
             resources=["*"]  # mogu ovde stativi specificirane lambde
         ))
+
+        my_layer = LayerVersion(self, 'Ffmpeg',
+                                code=_lambda.Code.from_asset("layers/ffmpeg.zip"),
+                                compatible_runtimes=[
+                                    _lambda.Runtime.PYTHON_3_8,
+                                    _lambda.Runtime.PYTHON_3_9,
+                                    _lambda.Runtime.PYTHON_3_10,
+                                    _lambda.Runtime.PYTHON_3_11
+                                ],
+                                description='A layer with the requests library'
+                                )
+
+        # Kreiraj Lambda funkciju koja koristi layer
+        startStepLambda = _lambda.Function(self, 'TranscodeFunction',
+                                           runtime=_lambda.Runtime.PYTHON_3_11,
+                                           handler='stepFunc.transcode_step_func_handler',
+                                           code=_lambda.Code.from_asset('transcodeStepFunc'),
+                                           layers=[my_layer],
+                                           timeout=Duration.seconds(900)
+                                           )
+
+        map_state = sfn.Map(self, 'Map State',
+                            max_concurrency=3,
+                            items_path=sfn.JsonPath.string_at('$.sharedData')
+                            )
+
+        map_state.add_retry(
+            interval=Duration.seconds(5),
+            max_attempts=5,
+            backoff_rate=2.0
+        )
+
+        lambda_invoke_task = sfn_tasks.LambdaInvoke(self, 'Invoke Lambda',
+                                                    lambda_function=startStepLambda,
+                                                    timeout=Duration.seconds(1000)
+                                                    )
+
+        map_state.iterator(lambda_invoke_task)
+
+        start_state = sfn.Pass(self, 'Start State')
+
+        wait_state = sfn.Wait(self, 'Wait State',
+                              time=sfn.WaitTime.duration(Duration.seconds(30)))
+
+        definition = wait_state.next(map_state)
+
+        state_machine = sfn.StateMachine(self, 'StateMachineTranscode',
+                                         definition=definition,
+                                         timeout=Duration.minutes(15)
+                                         )
+
+        #
+        state_machine.grant_start_execution(send_message_resolutions)
+
+        sqs_queue_arn = 'arn:aws:sqs:eu-central-1:992382767224:CloudBackStack-UploadSQS4BB1896E-T93YQkfluhSC'
+        sqs_policy_statement = iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=['sqs:SendMessage'],
+            resources=[sqs_queue_arn]
+        )
+
+        send_message_resolutions.add_to_role_policy(sqs_policy_statement)
+
+        bucket.grant_read(startStepLambda)
+        bucket.grant_put(startStepLambda)
+        bucket.grant_read_write(startStepLambda)
+
+        # Postavljanje okruženja za uploadMovie Lambda funkciju
+        send_message_resolutions.add_environment('STEP_FUNCTION_ARN', state_machine.state_machine_arn)
+        # RUCNO DODAMO ADRESU OD STEP FUNKCIJE
+
+        # Postavljanje okruženja za transcodeContent Lambda funkciju
+        # transcode_content.add_environment('BUCKET_NAME', props.bucket_name)
+        # OVO CEMO RUCNO
+
+        # SQS Queue
+        sqs_queue = sqs.Queue(self, "UploadSQS")
+
+        # Lambda funkcija - Step Function Invoker
+        step_function_invoker = _lambda.Function(self, "StepFunctionInvoker",
+                                                 runtime=_lambda.Runtime.PYTHON_3_11,
+                                                 handler="invokeStepFunc.invoke_step_func_handler",
+                                                 code=_lambda.Code.from_asset("invokeStepFunc"),
+                                                 timeout=Duration.seconds(30)
+                                                 )
+
+        sqs_queue.grant_send_messages(step_function_invoker)
+        bucket.grant_read(step_function_invoker)
+
+        bucket.grant_read_write(upload_data)
+        bucket.grant_read_write(edit_data)
+
+        step_function_invoker.add_environment("STATE_MACHINE_ARN", state_machine.state_machine_arn)
+        state_machine.grant_start_execution(step_function_invoker)
+
+        # bucket.add_event_notification(s3.EventType.OBJECT_CREATED, s3n.LambdaDestination(step_function_invoker))
+        step_function_invoker.add_event_source(lambda_event_sources.SqsEventSource(sqs_queue))
+
+        # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
+        table.grant_read_data(get_movie_lambda)
 
         bucket.grant_read_write(upload_data)
         bucket.grant_read_write(edit_data)
@@ -835,7 +954,7 @@ class CloudBackStack(Stack):
             source_arn=self.api.arn_for_execute_api("/*/*/*")
         )
 
-        start_upload_data.add_permission(
+        send_message_resolutions.add_permission(
             "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
@@ -1149,6 +1268,14 @@ class CloudBackStack(Stack):
         self.api.root.add_resource("putMovie").add_method("PUT", apigateway.LambdaIntegration(edit_data,
                                                                                               credentials_role=api_gateway_role,
                                                                                               proxy=True))
+
+        # send_message_resolutions
+        search = self.api.root.add_resource("sendMessageTranscode")
+        search.add_method("POST",
+                          apigateway.LambdaIntegration(send_message_resolutions,
+                                                       credentials_role=api_gateway_role,
+                                                       proxy=True))
+
 
         # deployment nakon dodavanja svih resursa i metoda
         api_deployment_new = apigateway.Deployment(self, "ApiDeploymentTotalNew",

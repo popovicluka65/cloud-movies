@@ -68,11 +68,26 @@ export class UploadMovieComponent {
     console.log(uploadMovie)
 
     this.movieService.uploadMovie(uploadMovie).subscribe(
-      (response: string) => {
-        console.log(response);
-        this.movieService.uploadFileToS3(response, this.movieFile!).subscribe(
+      (responseUpl: any) => {
+        console.log(responseUpl);
+        console.log(responseUpl['presigned_url'])
+        this.movieService.uploadFileToS3(responseUpl['presigned_url'], this.movieFile!).subscribe(
           (response: string) => {
-            console.log(response);
+            // console.log(response['persinged_url']);
+            const data = {
+              "id": responseUpl['uuid']
+            }
+            this.movieService.transcodeMovie(data).subscribe(
+              (response: string) => {
+                console.log(response)
+
+              },
+              (error: any) => {
+                console.error(error);
+
+              }
+            );
+
           },
           (error: any) => {
             console.error(error);
