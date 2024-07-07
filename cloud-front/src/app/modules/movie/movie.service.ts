@@ -50,9 +50,9 @@ export class MovieService {
   }
 
   //dodati sta treba, ovo je samo template, proslediti sta treba, promeniti putanju i potencijalno return...
-  uploadMovie(movieData: any): Observable<string> {
-    const url = environment.apiHost + "movieS3";
-    return this.httpClient.post(url, movieData, {responseType: 'text'});
+  uploadMovie(movieData: any): Observable<any> {
+    const url = environment.apiHost+"movieS3";
+    return this.httpClient.post(url, movieData);
     // .pipe(
     // map(response => response.persignedUrl) // Mapiramo odgovor da vratimo samo upload_url
 
@@ -69,6 +69,14 @@ export class MovieService {
       'Content-Type': file.type
     };
     return this.httpClient.put<string>(presignedUrl, file, {responseType: 'json', headers});
+  }
+
+  transcodeMovie(id: any): Observable<any> {
+    const url = environment.apiHost+"sendMessageTranscode";
+    return this.httpClient.post(url, id);
+    // .pipe(
+    // map(response => response.persignedUrl) // Mapiramo odgovor da vratimo samo upload_url
+
   }
 
   subscribe(data: any): Observable<string> {
@@ -91,6 +99,8 @@ export class MovieService {
 
     return this.httpClient.post<any>(url, body, options);
   }
+
+
 
   searchMovies(searchParams: any): Observable<any> {
     const url = environment.apiHost + "search";

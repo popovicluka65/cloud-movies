@@ -78,6 +78,11 @@ def upload_data_handler(event, context):
                 ExpiresIn=3600
             )
 
+            response_body = {
+                'presigned_url': presigned_url,
+                'uuid': generated_uuid
+            }
+
             print(presigned_url)
         except Exception as e:
             return {
@@ -88,7 +93,8 @@ def upload_data_handler(event, context):
         return {
             'statusCode': 200,
             'headers': headers,
-            'body': presigned_url
+            'body': json.dumps(response_body)
+
         }
     except NoCredentialsError:
         return {
