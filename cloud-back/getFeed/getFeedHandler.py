@@ -19,8 +19,11 @@ def get_feed_handler(event, context):
     }
 
     try:
-        body = json.loads(event['body'])
-        user_id = body['user_id']
+        #body = json.loads(event['body'])
+        #user_id = body['user_id']
+        path = event['path']
+        path_parts = path.split('/')
+        user_id = path_parts[-1]
         response = table_feed.get_item(Key={'user_id': user_id})
         movies_list = response['Item']['movies_ids']
 

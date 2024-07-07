@@ -9,6 +9,8 @@ table_name = 'MoviesTable100'
 s3 = boto3.client('s3')
 S3_BUCKET_NAME = 'content-bucket-cloud-app-movie2'
 S3_FOLDER_PATH = 'movies/'
+table_interacion='Interaction100Table'
+table_feed='Feed100Table'
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -17,6 +19,8 @@ headers = {
 }
 def lambda_handler(event, context):
     table = dynamodb.Table(table_name)
+    table_interacions = dynamodb.Table(table_interacion)
+    table_feeds = dynamodb.Table(table_feed)
     try:
         path = event['path']
         path_parts = path.split('/')
@@ -33,6 +37,43 @@ def lambda_handler(event, context):
             Bucket=S3_BUCKET_NAME,
             Key=f"{S3_FOLDER_PATH}{partition_key_value}"
         )
+
+
+        responseInteraction = table_interacions.scan()
+        itemsInteraction = responseInteraction['Items']
+        while 'LastEvaluatedKey' in responseInteraction:
+            response = table_interacions.scan(ExclusiveStartKey=responseInteraction['LastEvaluatedKey'])
+            itemsInteraction.extend(response['Items'])
+
+        print(itemsInteraction)
+
+        responseFeed = table_feeds.scan()
+        itemsFeed = responseFeed['Items']
+        while 'LastEvaluatedKey' in responseFeed:
+            response = table_feeds.scan(ExclusiveStartKey=responseFeed['LastEvaluatedKey'])
+            itemsFeed.extend(response['Items'])
+
+        print(itemsFeed)
+
+        for item in itemsFeed:
+            user_id = item['user_id']
+            values = item['movies_ids']
+
+            print(user_id)
+            print(values)
+            new_values=[]
+
+            for value in values:
+                if value!=partition_key_value:
+                    new_values.append(value)
+
+            item1 = {
+                'user_id': user_id,
+                'movies_ids': new_values
+            }
+
+            table_feeds.put_item(Item=item1)
+
 
         return {
             'headers': headers,

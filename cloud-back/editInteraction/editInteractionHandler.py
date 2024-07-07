@@ -182,6 +182,7 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
             seven_days_ago = today - timedelta(days=7)
             if given_date==today:
                 p=5
+                value_movie+=5
                 value_movie*=3
             if three_days_ago<=given_date<today:
                 value_movie *= 2
@@ -235,7 +236,7 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
         # }
 
         # try:
-        #     response = dynamodb_client.put_item(
+        #     response = dyntoamodb_client.put_item(
         #         TableName=table_interacion,
         #         Item=item
         #     )

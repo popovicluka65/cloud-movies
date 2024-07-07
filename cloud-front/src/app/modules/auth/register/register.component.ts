@@ -12,6 +12,7 @@ import {environment} from "../../../environment/environment";
 import AWS from 'aws-sdk';
 import {LayoutModule} from "../../layout/layout.module";
 import {HttpClient} from "@angular/common/http";
+import {MovieService} from "../../movie/movie.service";
 
 @Component({
   selector: 'app-register',
@@ -51,7 +52,7 @@ export class RegisterComponent implements OnInit {
 
   private userPool = new CognitoUserPool(this.userPoolData);
 
-  constructor(private router: Router,private httpClient:HttpClient) {}
+  constructor(private router: Router,private httpClient:HttpClient,private movieService:MovieService) {}
 
   ngOnInit(): void {}
 
@@ -96,6 +97,16 @@ export class RegisterComponent implements OnInit {
           console.error('Failed to add user to group:', error);
         }
       );
+
+      this.movieService.interaction(result?.userSub).subscribe(
+        (result:any) => {
+          console.log(result)
+        },
+        (error) => {
+          console.error('Greška prilikom dobavljanja filmova:', error);
+        }
+      );
+
       this.router.navigate(['/verify-email/'+this.registerUsername]); // Zameni sa putanjom na koju želiš da preusmeriš korisnika nakon registracije
     });
   }

@@ -1259,7 +1259,7 @@ class CloudBackStack(Stack):
                                                        credentials_role=api_gateway_role,
                                                        proxy=True))
 
-        get_feed = self.api.root.add_resource("feed")
+        get_feed = self.api.root.add_resource("feed").add_resource("{user_id}")
         get_feed.add_method("GET",
                             apigateway.LambdaIntegration(get_feed_lambda,
                                                          credentials_role=api_gateway_role,

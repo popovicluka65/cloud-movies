@@ -34,10 +34,7 @@ export class MovieDetailsComponent implements OnInit {
 
   constructor(private movieService: MovieService, private http: HttpClient, private route: ActivatedRoute,
               private authService: AuthService, private router: Router) {
-    console.log("ROLEEEE MOVIES")
-    console.log(authService.getRole())
     this.role = authService.getRole();
-    console.log(this.role);
     this.route.params.subscribe(params => {
       const id = params['movieId'];
       let lastIndex = params['movieId'].lastIndexOf(':');
@@ -106,7 +103,7 @@ export class MovieDetailsComponent implements OnInit {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         let downloadRecord = {
-          "userId": "popovicluka65@gmail.com",
+          "userId": this.authService.getUsername(),
           "movie_id": this.movie!.movie_id,
           "title": this.movie!.title
         }
@@ -123,6 +120,14 @@ export class MovieDetailsComponent implements OnInit {
       (error) => {
         console.error('Error downloading video:', error);
         // Handle error
+      }
+    );
+    this.movieService.interaction(this.authService.getUsername()).subscribe(
+      (result:any) => {
+        console.log(result)
+      },
+      (error) => {
+        console.error('Greška prilikom dobavljanja filmova:', error);
       }
     );
   }
@@ -156,11 +161,18 @@ export class MovieDetailsComponent implements OnInit {
       .subscribe(
         response => {
           console.log('Review added successfully:', response);
-          // Ovde možete dodati logiku za obradu odgovora ako je potrebno
+          this.movieService.interaction(this.authService.getUsername()).subscribe(
+            (result:any) => {
+              console.log(result)
+            },
+            (error) => {
+              console.error('Greška prilikom dobavljanja filmova:', error);
+            }
+          );
         },
         error => {
           console.error('Error adding review:', error);
-          // Ovde možete dodati logiku za upravljanje greškom
+
         }
       );
   }
