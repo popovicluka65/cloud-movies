@@ -31,6 +31,7 @@ export class MovieDetailsComponent implements OnInit {
   movie: Movie | undefined;
   role: string | null = null;
   selectedRating: number = 0;
+  selectedResolution: any = '';
 
   constructor(private movieService: MovieService, private http: HttpClient, private route: ActivatedRoute,
               private authService: AuthService, private router: Router) {
@@ -110,7 +111,6 @@ export class MovieDetailsComponent implements OnInit {
         this.movieService.downloadRecord(downloadRecord).subscribe(
           (data) => {
             console.log('Downloaded data:', data);
-            // Možete dalje obraditi preuzete podatke ovde
           },
           (error) => {
             console.error('Error downloading data:', error);
@@ -122,14 +122,14 @@ export class MovieDetailsComponent implements OnInit {
         // Handle error
       }
     );
-    this.movieService.interaction(this.authService.getUsername()).subscribe(
-      (result:any) => {
-        console.log(result)
-      },
-      (error) => {
-        console.error('Greška prilikom dobavljanja filmova:', error);
-      }
-    );
+    // this.movieService.interaction(this.authService.getUsername()).subscribe(
+    //   (result:any) => {
+    //     console.log(result)
+    //   },
+    //   (error) => {
+    //     console.error('Greška prilikom dobavljanja filmova:', error);
+    //   }
+    // );
   }
 
   edit() {
@@ -175,5 +175,35 @@ export class MovieDetailsComponent implements OnInit {
 
         }
       );
+  }
+  transcoding() {
+    if (this.selectedResolution) {
+      console.log(`${this.selectedResolution}`);
+      const resolution: any = [];
+      console.log(this.selectedResolution);
+
+      if (this.selectedResolution === '360') {
+        resolution.push(640, 360);
+      } else if (this.selectedResolution === '480') {
+        resolution.push(854, 480);
+      } else if (this.selectedResolution === '720') {
+        resolution.push(1280, 720);
+      }
+      const url_movie = "resized_["+resolution[0]+", "+resolution[1]+"]_"+this.movieId;
+      const data = {
+        "movie_id": url_movie
+      }
+
+      this.movieService.getTranscodedVideo(data).subscribe(
+        (result: any) => {
+          this.videoUrl = result.response;
+          this.playVideo()
+        },
+        (error) => {
+          console.error('', error);
+        }
+      );
+
+    }
   }
 }

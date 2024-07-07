@@ -153,4 +153,9 @@ export class MovieService {
     const url = `${environment.apiHost}interaction`;
     return this.httpClient.put<any>(url, { username });
   }
+
+  getTranscodedVideo(data:any): Observable<any> {
+    const url = `${environment.apiHost}transcoding`;
+    return this.httpClient.post<any>(url,data );
+  }
 }
