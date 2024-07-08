@@ -5,6 +5,8 @@ import time
 import boto3
 import os
 
+
+
 def upload_data_handler(event, context):
     client = boto3.client('stepfunctions')
     state_machine_arn = os.environ['STATE_MACHINE_ARN']

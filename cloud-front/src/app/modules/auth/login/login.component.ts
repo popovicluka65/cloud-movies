@@ -82,6 +82,13 @@ export class LoginComponent implements OnInit{
           localStorage.setItem('currentUser', idToken);
           console.log(this.loginUsername)
           console.log(this.authService.getUsername())
+          this.movieService.interaction(this.authService.getUsername()).subscribe(
+            (result:any) => {
+              console.log(result)
+            },
+            (error) => {
+              console.error('Greška prilikom dobavljanja filmova:', error);
+            })
           this.router.navigate(['/home']);
           this.movieService.getFeed(this.authService.getUsername()).subscribe(
             (movies:Movie[]) => {

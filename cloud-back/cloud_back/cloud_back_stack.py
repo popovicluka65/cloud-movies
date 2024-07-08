@@ -926,7 +926,7 @@ class CloudBackStack(Stack):
 
         table_subscricions.add_global_secondary_index(
             index_name='subscriber-index4',
-            partition_key={'name': 'subscriber_email', 'type': dynamodb.AttributeType.STRING}
+            partition_key={'name': 'subscriber', 'type': dynamodb.AttributeType.STRING}
         )
         # table_subscricions.add_global_secondary_index(
         #     index_name='subscriber-index',
