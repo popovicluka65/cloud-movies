@@ -83,6 +83,7 @@ export class MovieService {
 
   subscribe(data: any): Observable<string> {
     const url = environment.apiHost + "subscribe";
+    console.log(data)
     return this.httpClient.post<string>(url, data, {responseType: 'json'});
   }
   getFeed(username: string | null): Observable<Movie[]> {

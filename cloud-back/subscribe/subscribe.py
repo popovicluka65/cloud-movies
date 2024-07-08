@@ -44,15 +44,13 @@ def lambda_handler(event, context):
 
         table.put_item(Item=item)
 
-
-
         sns_subscription_response = sns_client.subscribe(
             TopicArn=topic_arn,
             Protocol='email',  # Ili 'sms' ili neki drugi protokol koji koristite
             Endpoint=subscriber_email,  # Email adresa ili broj telefona pretplatnika
         )
 
-        edit_feed_table(subscriber)
+        #edit_feed_table(subscriber)
 
         return {
             'headers': headers,
