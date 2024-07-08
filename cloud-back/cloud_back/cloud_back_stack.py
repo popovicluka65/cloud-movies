@@ -489,8 +489,37 @@ class CloudBackStack(Stack):
             None
         )
 
+        get_transcoded_lambda = create_lambda_function(
+            "getTranscodedFunction",
+            "getTranscodedFunction",
+            "getTranscodedVideo.lambda_handler",
+            "getTranscodedVideo",
+            "POST",
+            [],
+            None,
+            bucket.bucket_name
+        )
+
         # Dodajte dozvole za pristup DynamoDB tabeli
         unsubscribe_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "dynamodb:DescribeTable",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                ],
+                resources=[
+                    table_subscricions.table_arn
+                ]
+            )
+        )
+
+        get_transcoded_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
@@ -884,6 +913,7 @@ class CloudBackStack(Stack):
 
         bucket.grant_read_write(upload_data)
         bucket.grant_read_write(edit_data)
+        bucket.grant_read_write(get_transcoded_lambda)
 
         # Dodavanje dozvola Lambda funkciji za pristup DynamoDB tabeli
         table.grant_read_data(get_movie_lambda)
@@ -892,6 +922,8 @@ class CloudBackStack(Stack):
         table.grant_read_data(add_review_lambda)
         table.grant_read_data(search_lambda)
         table.grant_read_data(delete_movie_lambda)
+
+
         table_subscricions.add_global_secondary_index(
             index_name='subscriber-index4',
             partition_key={'name': 'subscriber_email', 'type': dynamodb.AttributeType.STRING}
@@ -1039,6 +1071,13 @@ class CloudBackStack(Stack):
         )
 
         search_lambda.add_permission(
+            "ApiGatewayInvokePermission",
+            action="lambda:InvokeFunction",
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            source_arn=self.api.arn_for_execute_api("/*/*/*")
+        )
+
+        get_transcoded_lambda.add_permission(
             "ApiGatewayInvokePermission",
             action="lambda:InvokeFunction",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
@@ -1259,7 +1298,7 @@ class CloudBackStack(Stack):
                                                        credentials_role=api_gateway_role,
                                                        proxy=True))
 
-        get_feed = self.api.root.add_resource("feed")
+        get_feed = self.api.root.add_resource("feed").add_resource("{user_id}")
         get_feed.add_method("GET",
                             apigateway.LambdaIntegration(get_feed_lambda,
                                                          credentials_role=api_gateway_role,
@@ -1276,7 +1315,11 @@ class CloudBackStack(Stack):
                                                        credentials_role=api_gateway_role,
                                                        proxy=True))
 
-
+        get_transcoded = self.api.root.add_resource("transcoding")
+        get_transcoded.add_method("POST",
+                          apigateway.LambdaIntegration(get_transcoded_lambda,
+                                                       credentials_role=api_gateway_role,
+                                                       proxy=True))
         # deployment nakon dodavanja svih resursa i metoda
         api_deployment_new = apigateway.Deployment(self, "ApiDeploymentTotalNew",
                                                    api=self.api)

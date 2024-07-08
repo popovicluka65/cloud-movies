@@ -23,16 +23,16 @@ export class NavbarComponent{
   }
 
   toHome() {
-
-    this.router.navigate(['/home']);
     this.movieService.getFeed(this.authService.getUsername()).subscribe(
-      (movies:Movie[]) => {
-        this.movieService.updateMovies(movies);
+      (result: Movie[]) => {
+        console.log(result);
+        this.movieService.updateMovies(result);
       },
       (error) => {
         console.error('Greška prilikom dobavljanja filmova:', error);
       }
     );
+    this.router.navigate(['/home']);
   }
   UploadVideo() {
     this.router.navigate(['/upload']);

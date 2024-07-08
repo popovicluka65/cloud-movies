@@ -45,12 +45,6 @@ def add_review_handler(event, context):
 
         table.put_item(Item=item)
 
-        edit_interaction_function_name = "editInteraction"
-
-        edit_interaction_payload = {
-            'user_id': user_id
-        }
-
         edit_feed_table(user_id)
 
         return {

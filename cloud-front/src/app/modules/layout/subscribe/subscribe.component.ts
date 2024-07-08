@@ -28,6 +28,14 @@ export class SubscribeComponent {
       data => {
         console.log(data.data)
         this.searchResults = data.data;
+        this.movieService.interaction(this.authService.getUsername()).subscribe(
+          (result:any) => {
+            console.log(result)
+          },
+          (error) => {
+            console.error('Greška prilikom dobavljanja filmova:', error);
+          }
+        );
       },
       error => {
         console.error('Error fetching subscriptions', error);
@@ -64,6 +72,15 @@ export class SubscribeComponent {
       },
       error => {
         console.error('Error deleting subscription', error);
+      }
+    );
+
+    this.movieService.interaction(this.authService.getUsername()).subscribe(
+      (result:any) => {
+        console.log(result)
+      },
+      (error) => {
+        console.error('Greška prilikom dobavljanja filmova:', error);
       }
     );
   }

@@ -31,13 +31,11 @@ export class MovieDetailsComponent implements OnInit {
   movie: Movie | undefined;
   role: string | null = null;
   selectedRating: number = 0;
+  selectedResolution: any = '';
 
   constructor(private movieService: MovieService, private http: HttpClient, private route: ActivatedRoute,
               private authService: AuthService, private router: Router) {
-    console.log("ROLEEEE MOVIES")
-    console.log(authService.getRole())
     this.role = authService.getRole();
-    console.log(this.role);
     this.route.params.subscribe(params => {
       const id = params['movieId'];
       let lastIndex = params['movieId'].lastIndexOf(':');
@@ -106,14 +104,13 @@ export class MovieDetailsComponent implements OnInit {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         let downloadRecord = {
-          "userId": "popovicluka65@gmail.com",
+          "userId": this.authService.getUsername(),
           "movie_id": this.movie!.movie_id,
           "title": this.movie!.title
         }
         this.movieService.downloadRecord(downloadRecord).subscribe(
           (data) => {
             console.log('Downloaded data:', data);
-            // Možete dalje obraditi preuzete podatke ovde
           },
           (error) => {
             console.error('Error downloading data:', error);
@@ -125,6 +122,14 @@ export class MovieDetailsComponent implements OnInit {
         // Handle error
       }
     );
+    // this.movieService.interaction(this.authService.getUsername()).subscribe(
+    //   (result:any) => {
+    //     console.log(result)
+    //   },
+    //   (error) => {
+    //     console.error('Greška prilikom dobavljanja filmova:', error);
+    //   }
+    // );
   }
 
   edit() {
@@ -156,12 +161,49 @@ export class MovieDetailsComponent implements OnInit {
       .subscribe(
         response => {
           console.log('Review added successfully:', response);
-          // Ovde možete dodati logiku za obradu odgovora ako je potrebno
+          this.movieService.interaction(this.authService.getUsername()).subscribe(
+            (result:any) => {
+              console.log(result)
+            },
+            (error) => {
+              console.error('Greška prilikom dobavljanja filmova:', error);
+            }
+          );
         },
         error => {
           console.error('Error adding review:', error);
-          // Ovde možete dodati logiku za upravljanje greškom
+
         }
       );
+  }
+  transcoding() {
+    if (this.selectedResolution) {
+      console.log(`${this.selectedResolution}`);
+      const resolution: any = [];
+      console.log(this.selectedResolution);
+
+      if (this.selectedResolution === '360') {
+        resolution.push(640, 360);
+      } else if (this.selectedResolution === '480') {
+        resolution.push(854, 480);
+      } else if (this.selectedResolution === '720') {
+        resolution.push(1280, 720);
+      }
+      const url_movie = "resized_["+resolution[0]+", "+resolution[1]+"]_"+this.movieId;
+      const data = {
+        "movie_id": url_movie
+      }
+
+      this.movieService.getTranscodedVideo(data).subscribe(
+        (result: any) => {
+          this.videoUrl = result.response;
+          this.playVideo()
+        },
+        (error) => {
+          console.error('', error);
+        }
+      );
+
+    }
   }
 }

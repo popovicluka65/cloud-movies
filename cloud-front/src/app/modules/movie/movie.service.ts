@@ -58,7 +58,6 @@ export class MovieService {
 
   }
 
-  // putMovie
   editMovie(movieData: any): Observable<string> {
     const url = environment.apiHost + "putMovie";
     return this.httpClient.put(url, movieData, {responseType: 'text'});
@@ -84,22 +83,10 @@ export class MovieService {
     const url = environment.apiHost + "subscribe";
     return this.httpClient.post<string>(url, data, {responseType: 'json'});
   }
-
-  getFeed(username: string | null): Observable<any> {
-    const url = `${environment.apiHost}feed`;
-    const body = {
-      user_id: username
-    };
-
-    const options = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json'
-      })
-    };
-
-    return this.httpClient.post<any>(url, body, options);
+  getFeed(username: string | null): Observable<Movie[]> {
+    const url = `${environment.apiHost}feed/`+username;
+    return this.httpClient.get<Movie[]>(url);
   }
-
 
 
   searchMovies(searchParams: any): Observable<any> {
@@ -158,7 +145,17 @@ export class MovieService {
   }
 
   deleteMovie(movieId: string) {
-    const url = `${environment.apiHost}/deleteMovie/` + movieId;
+    const url = `${environment.apiHost}deleteMovie/` + movieId;
     return this.httpClient.delete(url);
+  }
+
+  interaction(username: string | undefined | null): Observable<any> {
+    const url = `${environment.apiHost}interaction`;
+    return this.httpClient.put<any>(url, { username });
+  }
+
+  getTranscodedVideo(data:any): Observable<any> {
+    const url = `${environment.apiHost}transcoding`;
+    return this.httpClient.post<any>(url,data );
   }
 }

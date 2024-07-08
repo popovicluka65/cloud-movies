@@ -35,5 +35,16 @@
       <button class="movie-button" (click)="rateContent()">Oceni sadržaj</button>
     </div>
   </div>
+  <div class="movie-rating">
+    <label for="rating">Oceni sadržaj:</label>
+    <div class="rating-container">
+      <select name="rating" [(ngModel)]="selectedResolution">
+        <option value="360">360</option>
+        <option value="480">480</option>
+        <option value="720">720</option>
+      </select>
+      <button class="movie-button" (click)="transcoding()">Transcoding</button>
+    </div>
+  </div>
 </div>
 
