@@ -164,6 +164,28 @@ def send_notifications(title,director,actors,genres):
     except Exception as e:
         print("Error publishing SNS message:", str(e))
 
+def send_email(emails):
+    for email in emails:
+        if email:
+            try:
+                message = f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
+                message = f"Reziser " + director + ", glumci : " + actors + ", zanrovi" + genres + ".\n"
+                response = sns.publish(
+                    TopicArn=sns_topic_arn_email+email,
+                    Message=message,
+                    Subject='Novi film dostupan',
+                    MessageAttributes={
+                        'email': {
+                            'DataType': 'String',
+                            'StringValue': email
+                        }
+                    }
+                )
+                print(f"Message sent to {email}. Response: {response}")
+            except Exception as e:
+                print(f"Error publishing SNS message to {email}: {str(e)}")
+        else:
+            print(f"Subscriber '{subscriber}' email not found in subscribers list.")
 
 def edit_feed_table(username):
     try:
