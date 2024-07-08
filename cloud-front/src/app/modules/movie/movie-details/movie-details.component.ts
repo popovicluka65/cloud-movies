@@ -32,6 +32,7 @@ export class MovieDetailsComponent implements OnInit {
   movie: Movie | undefined;
   role: string | null = null;
   selectedRating: number = 0;
+  selectedResolution: any = '';
 
   constructor(private movieService: MovieService, private http: HttpClient, private route: ActivatedRoute,
               private authService: AuthService, private router: Router) {
@@ -157,27 +158,6 @@ export class MovieDetailsComponent implements OnInit {
       console.log('Molimo izaberite ocenu pre nego što ocenite sadržaj.');
     }
 
-    //problem je jer je ovo cognito user, potencijalno zameniti
-    // this.movieService.addReview(this.authService.getUsername(), this.selectedRating,this.movieId, this.title)
-    //   .subscribe(
-    //     response => {
-    //       console.log('Review added successfully:', response);
-    //     },
-    //     error => {
-    //       console.error('Error adding review:', error);
-    //
-    //     }
-    //   );
-    //
-    // this.movieService.interaction(this.authService.getUsername()).subscribe(
-    //   (result:any) => {
-    //     console.log(result)
-    //   },
-    //   (error) => {
-    //     console.error('Greška prilikom dobavljanja filmova:', error);
-    //   }
-    // );
-
     this.movieService.addReview(this.authService.getUsername(), this.selectedRating, this.movieId, this.title)
       .pipe(
         concatMap(response => {
@@ -194,5 +174,35 @@ export class MovieDetailsComponent implements OnInit {
           console.error('Greška prilikom dodavanja recenzije ili dobavljanja filmova:', error);
         }
       );
+  }
+  transcoding() {
+    if (this.selectedResolution) {
+      console.log(`${this.selectedResolution}`);
+      const resolution: any = [];
+      console.log(this.selectedResolution);
+
+      if (this.selectedResolution === '360') {
+        resolution.push(640, 360);
+      } else if (this.selectedResolution === '480') {
+        resolution.push(854, 480);
+      } else if (this.selectedResolution === '720') {
+        resolution.push(1280, 720);
+      }
+      const url_movie = "resized_["+resolution[0]+", "+resolution[1]+"]_"+this.movieId;
+      const data = {
+        "movie_id": url_movie
+      }
+
+      this.movieService.getTranscodedVideo(data).subscribe(
+        (result: any) => {
+          this.videoUrl = result.response;
+          this.playVideo()
+        },
+        (error) => {
+          console.error('', error);
+        }
+      );
+
+    }
   }
 }
