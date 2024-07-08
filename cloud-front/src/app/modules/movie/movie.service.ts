@@ -4,6 +4,7 @@ import {BehaviorSubject, map, Observable} from "rxjs";
 import {environment} from "../../environment/environment";
 import {PersingedS3} from "../../models/persingedS3";
 import {Movie} from "../../models/movie";
+import {AuthService} from "../services/auth.service";
 
 
 @Injectable({
@@ -15,7 +16,7 @@ export class MovieService {
 
   movies$ = this.moviesSubject.asObservable();
 
-  constructor(private httpClient: HttpClient) {
+  constructor(private httpClient: HttpClient,private authService:AuthService) {
     this.getMovies().subscribe({
       next: (data: Movie[]) => {
         this.moviesSubject.next(data);
@@ -51,11 +52,13 @@ export class MovieService {
 
   //dodati sta treba, ovo je samo template, proslediti sta treba, promeniti putanju i potencijalno return...
   uploadMovie(movieData: any): Observable<any> {
+    const jwt = this.authService.getJWT();
+    console.log(jwt)
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${jwt}`
+    });
     const url = environment.apiHost+"movieS3";
-    return this.httpClient.post(url, movieData);
-    // .pipe(
-    // map(response => response.persignedUrl) // Mapiramo odgovor da vratimo samo upload_url
-
+    return this.httpClient.post(url, movieData,{ headers });
   }
 
   editMovie(movieData: any): Observable<string> {
@@ -79,7 +82,6 @@ export class MovieService {
   }
 
   subscribe(data: any): Observable<string> {
-    console.log(data)
     const url = environment.apiHost + "subscribe";
     return this.httpClient.post<string>(url, data, {responseType: 'json'});
   }

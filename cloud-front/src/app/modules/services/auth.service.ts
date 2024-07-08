@@ -73,4 +73,8 @@ export class AuthService {
       return null;
     }
   }
+
+  getJWT() {
+    return localStorage.getItem('currentUser');
+  }
 }

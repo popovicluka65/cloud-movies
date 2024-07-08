@@ -1197,10 +1197,10 @@ class CloudBackStack(Stack):
             )
         )
 
-        # authorizer_admin = apigateway.TokenAuthorizer(
-        #     self, "AdminAuthorizer",
-        #     handler=authorization_admin_lambda_function
-        # )
+        authorizer_admin = apigateway.TokenAuthorizer(
+            self, "AdminAuthorizer",
+            handler=authorization_admin_lambda_function
+        )
         #
         # authorizer_user = apigateway.TokenAuthorizer(
         #     self, "UserAuthorizer",
@@ -1222,7 +1222,7 @@ class CloudBackStack(Stack):
         # POST metoda za /movieS3
         self.api.root.add_resource("movieS3").add_method("POST", apigateway.LambdaIntegration(upload_data,
                                                                                               credentials_role=api_gateway_role,
-                                                                                              proxy=True))
+                                                                                              proxy=True),authorizer=authorizer_admin)
 
         # GET metoda za /movie/{movieId}
         movie_resource_with_id = movie_resource.add_resource("{movieName}")

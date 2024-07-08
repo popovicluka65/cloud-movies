@@ -35,7 +35,7 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
 
         values_subscription=table_subs.query(
             IndexName='subscriber-index4',
-            KeyConditionExpression='subscriber = :subscribery',
+            KeyConditionExpression='subscriber = :subscriber',
             ExpressionAttributeValues={
                 ':subscriber': user_id
             }
