@@ -1,0 +1,50 @@
+<app-navbar></app-navbar>
+<div class="movie-card">
+  <div class="movie-video">
+    <div class="movie-video">
+      <video #videoPlayer controls>
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+  <div class="movie-details">
+    <h2 class="movie-title">{{movie?.title}}</h2>
+    <p class="movie-description">{{movie?.description}}</p>
+    <div class="movie-metadata">
+      <p><strong>Director:</strong>{{movie?.director}}</p>
+      <p><strong>Actor:</strong>{{movie?.actors}}</p>
+      <p><strong>Genre:</strong>{{movie?.genres}}</p>
+    </div>
+    <div class="movie-actions">
+      <button *ngIf="role === 'admin'"  class="movie-button" (click)="edit()">Edit</button>
+      <button *ngIf="role === 'admin'"  class="movie-button" (click)="delete()">Delete</button>
+      <button *ngIf="role === 'user'" class="movie-button" (click)="download()">Download</button>
+<!--      <button *ngIf="role === 'user'" class="movie-button" (click)="review()">Review</button>-->
+    </div>
+  </div>
+  <div class="movie-rating">
+    <label for="rating">Oceni sadržaj:</label>
+    <div class="rating-container">
+      <select id="rating" name="rating" [(ngModel)]="selectedRating">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <button class="movie-button" (click)="rateContent()">Oceni sadržaj</button>
+    </div>
+  </div>
+  <div class="movie-rating">
+    <label for="rating">Oceni sadržaj:</label>
+    <div class="rating-container">
+      <select name="rating" [(ngModel)]="selectedResolution">
+        <option value="360">360</option>
+        <option value="480">480</option>
+        <option value="720">720</option>
+      </select>
+      <button class="movie-button" (click)="transcoding()">Transcoding</button>
+    </div>
+  </div>
+</div>
+

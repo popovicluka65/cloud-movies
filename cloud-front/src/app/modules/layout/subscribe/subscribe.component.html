@@ -1,0 +1,33 @@
+<app-navbar></app-navbar>
+
+<div class="search-container">
+  <select [(ngModel)]="selectedCriteria" class="search-criteria">
+    <option value="" disabled selected>Select search criteria</option>
+    <option *ngFor="let option of searchOptions" [value]="option">{{ option }}</option>
+  </select>
+  <input type="text" [(ngModel)]="searchQuery" placeholder="Enter your search query..." class="search-input"/>
+  <button (click)="performSearch()" class="search-button">Search</button>
+</div>
+<!-- Tabela koja se prikazuje nakon pretrage -->
+<table *ngIf="searchResults && searchResults.length > 0" class="search-results-table">
+  <thead>
+  <tr>
+    <!--POPUNTI POSLE -->
+    <th></th>
+    <th>Content Creator</th>
+    <!-- Dodajte ostale kolone ovdje po potrebi -->
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let result of searchResults">
+    <td>{{ result.subscription_id}}</td>
+    <td>{{ result.type }}</td>
+    <td>{{ result.content_creator }}</td>
+   <td><button *ngIf="searchResults && searchResults.length > 0" class="delete-button" (click)="clearResults(result.subscription_id)">Unsubscribe</button></td>
+  </tr>
+  </tbody>
+
+</table>
+<div *ngIf="searchResults && searchResults.length === 0" class="no-results">
+  No results found.
+</div>

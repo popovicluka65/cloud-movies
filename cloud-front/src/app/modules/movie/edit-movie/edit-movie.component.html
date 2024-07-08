@@ -1,0 +1,35 @@
+<app-navbar></app-navbar>
+<div class="form-container">
+  <h1>Edit Movie</h1>
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" [(ngModel)]="title" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="4" [(ngModel)]="description" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="director">Director</label>
+      <input type="text" id="director" name="director" [(ngModel)]="director" required>
+    </div>
+    <div class="form-group">
+      <label for="actors">Actors</label>
+      <input type="text" id="actors" name="actors" [(ngModel)]="actors" required>
+    </div>
+    <div class="form-group">
+      <label>Genre</label>
+      <div class="checkbox-group">
+        <label *ngFor="let genre of genreList">
+          <input type="checkbox" [value]="genre" [checked]="isGenreSelected(genre)" (change)="onGenreChange($event)"> {{genre}}
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="file">Upload Movie</label>
+      <input type="file" id="file" name="file" (change)="onFileChange($event)" required>
+    </div>
+    <button type="submit">Submit</button>
+  </form>
+</div>
