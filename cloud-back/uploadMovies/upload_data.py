@@ -15,6 +15,7 @@ S3_FOLDER_PATH = 'movies/'
 
 sns = boto3.client('sns')
 sns_topic_arn = 'arn:aws:sns:eu-central-1:992382767224:MovieTopic'
+sns_topic_arn_email = 'arn:aws:sns:eu-central-1:992382767224:MovieTopic/email/'
 subscribe_table_name = 'Subscription100Table'
 table_interacion='Interaction100Table'
 table_feed='Feed100Table'
@@ -139,50 +140,29 @@ def send_notifications(title,director,actors,genres):
     subscriptions = dynamodb.Table(subscribe_table_name)
     response = subscriptions.scan()
     items = response.get('Items', [])
-
-    # Ispišite podatke
+    print(items)
+    emails = []
+    print("ITEMS")
     for item in items:
+        print(item)
         if item['type'] == director:
-            print("UDJE DIREKTOR")
-            try:
-                message = "Subscribe-vani ste se na " + item['type'] +".\n"
-                message += f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
-
-                response = sns.publish(
-                    TopicArn=sns_topic_arn,
-                    Message=message,
-                    Subject='Novi film dostupan'
-                )
-            except Exception as e:
-                print("Error publishing SNS message:", str(e))
-
+            emails.append(item['subscriber_email'])
         if item['type'] in actors:
-            try:
-                message = "Subscribe-vani ste se na " + item['type'] +".\n"
-                message += f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
-
-                response = sns.publish(
-                    TopicArn=sns_topic_arn,
-                    Message=message,
-                    Subject='Novi film dostupan'
-                )
-            except Exception as e:
-                print("Error publishing SNS message:", str(e))
-
+            emails.append(item['subscriber_email'])
         if item['type'] in genres:
-            print("UDJE GENRES")
-            try:
-                message = "Subscribe-vani ste se na " + item['type'] +".\n"
-                message += f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
+            emails.append(item['subscriber_email'])
 
-                response = sns.publish(
-                    TopicArn=sns_topic_arn,
-                    Message=message,
-                    Subject='Novi film dostupan'
-                )
-            except Exception as e:
-                print("Error publishing SNS message:", str(e))
+    try:
+        message = f"Novi film " + title + " je dostupan! Pogledajte ga sada.\n"
+        message = f"Reziser " +  director+  ", glumci : "+actors+", zanrovi"+genres+".\n"
 
+        response = sns.publish(
+            TopicArn=sns_topic_arn,
+            Message=message,
+            Subject='Novi film dostupan'
+        )
+    except Exception as e:
+        print("Error publishing SNS message:", str(e))
 
 
 def edit_feed_table(username):

@@ -192,7 +192,7 @@ class CloudBackStack(Stack):
             description="Regular user group"
         )
 
-        # Kreiranje SNS teme
+        # # Kreiranje SNS teme
         topic = sns.Topic(self, "MovieTopic",
                           display_name="MovieTopic",
                           topic_name="MovieTopic")

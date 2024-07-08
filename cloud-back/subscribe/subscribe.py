@@ -44,6 +44,8 @@ def lambda_handler(event, context):
 
         table.put_item(Item=item)
 
+
+
         sns_subscription_response = sns_client.subscribe(
             TopicArn=topic_arn,
             Protocol='email',  # Ili 'sms' ili neki drugi protokol koji koristite
@@ -51,14 +53,6 @@ def lambda_handler(event, context):
         )
 
         edit_feed_table(subscriber)
-
-        # # Slanje obaveštenja putem SNS-a
-        # message = f"Novi sadržaj je objavljen od strane {content_creator}. Pretplatnik: {subscriber}, Tip: {query}"
-        # sns_response = sns_client.publish(
-        #     TopicArn=topic_arn,
-        #     Message=message,
-        #     Subject='Obaveštenje o novom sadržaju'
-        # )
 
         return {
             'headers': headers,
