@@ -8,6 +8,7 @@ import {NgIf} from "@angular/common";
 import {AuthService} from "../../services/auth.service";
 import {LayoutModule} from "../../layout/layout.module";
 import {FormsModule} from "@angular/forms";
+import {concatMap, mergeMap} from "rxjs";
 
 
 @Component({
@@ -91,9 +92,9 @@ export class MovieDetailsComponent implements OnInit {
   }
 
   download() {
-    this.http.get(this.videoUrl, {responseType: 'blob'}).subscribe(
-      (response: Blob) => {
-        const blob = new Blob([response], {type: 'video/mp4'});
+    this.http.get(this.videoUrl, { responseType: 'blob' }).pipe(
+      mergeMap((response: Blob) => {
+        const blob = new Blob([response], { type: 'video/mp4' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -102,35 +103,35 @@ export class MovieDetailsComponent implements OnInit {
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+
+        console.log('Video preuzet i preuzimanje započeto.');
+
         let downloadRecord = {
           "userId": this.authService.getUsername(),
           "movie_id": this.movie!.movie_id,
           "title": this.movie!.title
-        }
-        this.movieService.downloadRecord(downloadRecord).subscribe(
-          (data) => {
-            console.log('Downloaded data:', data);
-            // Možete dalje obraditi preuzete podatke ovde
-          },
-          (error) => {
-            console.error('Error downloading data:', error);
-          }
-        );
+        };
+
+        return this.movieService.downloadRecord(downloadRecord);
+      }),
+      concatMap((data) => {
+        console.log('Preuzimanje zabeleženo:', data);
+        // Možete dalje obraditi preuzete podatke ovde
+        console.log("Započinjanje interakcije...");
+        return this.movieService.interaction(this.authService.getUsername());
+      })
+    ).subscribe(
+      (result: any) => {
+        console.log('Interakcija uspešna:', result);
       },
       (error) => {
-        console.error('Error downloading video:', error);
-        // Handle error
-      }
-    );
-    this.movieService.interaction(this.authService.getUsername()).subscribe(
-      (result:any) => {
-        console.log(result)
-      },
-      (error) => {
-        console.error('Greška prilikom dobavljanja filmova:', error);
+        console.error('Greška prilikom preuzimanja videa ili dobavljanja filmova:', error);
       }
     );
   }
+
+
+
 
   edit() {
     this.router.navigate(['/editMovie', this.movie!.movie_id + ":" + this.movie!.title]);
@@ -157,22 +158,40 @@ export class MovieDetailsComponent implements OnInit {
     }
 
     //problem je jer je ovo cognito user, potencijalno zameniti
-    this.movieService.addReview(this.authService.getUsername(), this.selectedRating,this.movieId, this.title)
-      .subscribe(
-        response => {
-          console.log('Review added successfully:', response);
-          this.movieService.interaction(this.authService.getUsername()).subscribe(
-            (result:any) => {
-              console.log(result)
-            },
-            (error) => {
-              console.error('Greška prilikom dobavljanja filmova:', error);
-            }
-          );
-        },
-        error => {
-          console.error('Error adding review:', error);
+    // this.movieService.addReview(this.authService.getUsername(), this.selectedRating,this.movieId, this.title)
+    //   .subscribe(
+    //     response => {
+    //       console.log('Review added successfully:', response);
+    //     },
+    //     error => {
+    //       console.error('Error adding review:', error);
+    //
+    //     }
+    //   );
+    //
+    // this.movieService.interaction(this.authService.getUsername()).subscribe(
+    //   (result:any) => {
+    //     console.log(result)
+    //   },
+    //   (error) => {
+    //     console.error('Greška prilikom dobavljanja filmova:', error);
+    //   }
+    // );
 
+    this.movieService.addReview(this.authService.getUsername(), this.selectedRating, this.movieId, this.title)
+      .pipe(
+        concatMap(response => {
+          console.log('Review added successfully:', response);
+          // Nakon što je prva operacija uspešno završena, pozivamo drugu operaciju
+          return this.movieService.interaction(this.authService.getUsername());
+        })
+      )
+      .subscribe(
+        (result: any) => {
+          console.log(result);
+        },
+        (error) => {
+          console.error('Greška prilikom dodavanja recenzije ili dobavljanja filmova:', error);
         }
       );
   }

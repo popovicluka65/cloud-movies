@@ -13,6 +13,7 @@ table_download='Download100Table'
 
 
 def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJE, JEDNU IZMENA, DRUGA CREATE
+    print("UDJE DOWNLOAD")
     table = dynamodb.Table(table_name)
     table_subs=dynamodb.Table(table_sub)
     table_downloads=dynamodb.Table(table_download)
@@ -34,11 +35,14 @@ def lambda_handler(event, context):         #AKO BUDE SPORO, NAPRAVITI 2 FUNKCIJ
 
         values_subscription=table_subs.query(
             IndexName='subscriber-index4',
-            KeyConditionExpression='subscriber_email = :subscriber_email',
+            KeyConditionExpression='subscriber = :subscribery',
             ExpressionAttributeValues={
-                ':subscriber_email': user_id
+                ':subscriber': user_id
             }
         )
+
+        print("VALUES SUBSCRIPTION")
+        print(values_subscription)
 
         responseReview = table_reviews.scan()
         itemsReview = responseReview['Items']

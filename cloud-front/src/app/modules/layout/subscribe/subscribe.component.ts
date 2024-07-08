@@ -4,6 +4,7 @@ import {NgForOf, NgIf} from "@angular/common";
 import {MovieService} from "../../movie/movie.service";
 import {AuthService} from "../../services/auth.service";
 import {LayoutModule} from "../layout.module";
+import {concatMap, delay, of, switchMap} from "rxjs";
 
 @Component({
   selector: 'app-subscribe',
@@ -23,22 +24,21 @@ export class SubscribeComponent {
   searchOptions: string[] = ['Genre', 'Director', 'Actor'];
   searchResults: any[] = [];
 
-  constructor(private movieService:MovieService,private authService:AuthService) {
-    this.movieService.getSubscribeByUser(this.authService.getUsername()).subscribe(
-      data => {
-        console.log(data.data)
+  constructor(private movieService: MovieService, private authService: AuthService) {
+    this.movieService.getSubscribeByUser(this.authService.getUsername()).pipe(
+      switchMap(data => {
+        console.log(data.data);
         this.searchResults = data.data;
-        this.movieService.interaction(this.authService.getUsername()).subscribe(
-          (result:any) => {
-            console.log(result)
-          },
-          (error) => {
-            console.error('Greška prilikom dobavljanja filmova:', error);
-          }
-        );
+        // Odloži izvršenje sledeće akcije za 2 sekunde
+        return of(null).pipe(delay(2000));
+      }),
+      switchMap(() => this.movieService.interaction(this.authService.getUsername()))
+    ).subscribe(
+      (result: any) => {
+        console.log(result);
       },
-      error => {
-        console.error('Error fetching subscriptions', error);
+      (error) => {
+        console.error('Greška prilikom dobavljanja filmova:', error);
       }
     );
   }
@@ -51,36 +51,59 @@ export class SubscribeComponent {
       content: this.selectedCriteria
     };
 
-    this.movieService.subscribe(searchData)
-      .subscribe(
-        (response) => {
-          console.log('Subscribe response:', response);
-        },
-        (error) => {
-          console.error('Error subscribing:', error);
-        }
-      );
+    this.movieService.subscribe(searchData).pipe(
+      switchMap((response) => {
+        console.log('Subscribe response:', response);
+        // Pozivamo interaction nakon što se subscribe završi
+        return this.movieService.interaction(this.authService.getUsername());
+      })
+    ).subscribe(
+      (result: any) => {
+        console.log('Interaction result:', result);
+      },
+      (error) => {
+        console.error('Greška prilikom interakcije ili pretplate:', error);
+      }
+    );
   }
 
   clearResults(id:string) {
-    console.log(this.authService.getUsername())
-    this.movieService.deleteSubscribe(id,this.authService.getUsername()).subscribe(
-      () => {
+    console.log("UDJE OVDE")
+    // console.log(this.authService.getUsername())
+    // this.movieService.deleteSubscribe(id,this.authService.getUsername()).subscribe(
+    //   () => {
+    //     console.log(`Subscription with ID ${id} deleted successfully.`);
+    //     // Ažuriraj listu pretplata
+    //     //this.loadSubscriptions();
+    //   },
+    //   error => {
+    //     console.error('Error deleting subscription', error);
+    //   }
+    // );
+    //
+    // this.movieService.interaction(this.authService.getUsername()).subscribe(
+    //   (result:any) => {
+    //     console.log(result)
+    //   },
+    //   (error) => {
+    //     console.error('Greška prilikom dobavljanja filmova:', error);
+    //   }
+    // );
+    this.movieService.deleteSubscribe(id, this.authService.getUsername()).pipe(
+      concatMap(() => {
         console.log(`Subscription with ID ${id} deleted successfully.`);
         // Ažuriraj listu pretplata
-        //this.loadSubscriptions();
-      },
-      error => {
-        console.error('Error deleting subscription', error);
-      }
-    );
-
-    this.movieService.interaction(this.authService.getUsername()).subscribe(
-      (result:any) => {
-        console.log(result)
+        // this.loadSubscriptions();
+        // Odloži izvršenje sledeće akcije za 2 sekunde
+        return of(null).pipe(delay(2000));
+      }),
+      concatMap(() => this.movieService.interaction(this.authService.getUsername()))
+    ).subscribe(
+      (result: any) => {
+        console.log(result);
       },
       (error) => {
-        console.error('Greška prilikom dobavljanja filmova:', error);
+        console.error('Greška prilikom brisanja pretplate ili dobavljanja filmova:', error);
       }
     );
   }

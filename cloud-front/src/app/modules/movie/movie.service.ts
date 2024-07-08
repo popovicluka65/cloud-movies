@@ -150,6 +150,7 @@ export class MovieService {
   }
 
   interaction(username: string | undefined | null): Observable<any> {
+    console.log("UDJE U interaction")
     const url = `${environment.apiHost}interaction`;
     return this.httpClient.put<any>(url, { username });
   }
