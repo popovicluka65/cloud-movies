@@ -152,20 +152,30 @@ def send_notifications(title,director,actors,genres):
     #     if item['type'] in genres:
     #         emails.append(item['subscriber_email'])
 
-    try:
-        message = (
+    send = False
+    for item in items:
+        if item['type'] == director:
+            send = True
+        if item['type'] in actors:
+            send = True
+        if item['type'] in genres:
+            send = True
+
+    if send:
+        try:
+            message = (
             f"Novi film {title} je dostupan! Pogledajte ga sada.\n"
             f"Režiser: {director}, glumci: {actors}, žanrovi: {genres}.\n"
-        )
+            )
 
-        response = sns.publish(
-            TopicArn=sns_topic_arn,
-            Message=message,
-            Subject='Novi film dostupan'
-        )
-        print("Poruka uspešno poslata!")
-    except Exception as e:
-        print("Greška prilikom slanja SNS poruke:", str(e))
+            response = sns.publish(
+                TopicArn=sns_topic_arn,
+                Message=message,
+                Subject='Novi film dostupan'
+                )
+            print("Poruka uspešno poslata!")
+        except Exception as e:
+            print("Greška prilikom slanja SNS poruke:", str(e))
 
 def send_email(emails):
     for email in emails:
