@@ -23,7 +23,7 @@ This project is a cloud-native web application aimed at storing and managing mov
 
 1. **Clone the Repository**:
     ```
-    git@github.com:popovicluka65/cloud-movies.git
+    git clone git@github.com:popovicluka65/cloud-movies.git
     ```
 ### Backend
 2. **Create Virtual Environment**:
